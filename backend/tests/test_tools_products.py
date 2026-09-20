@@ -324,6 +324,21 @@ def test_cost_projection_unknown_product(ctx):
     assert e.value.code == "not_found"
 
 
+def _assert_pct_of_contributions(out):
+    """The tool rounds the percentage once, from unrounded inputs. Recomputing it from the two rounded outputs is off
+    by up to their 0.005 rounding relative to the contributions, which is not small for a tiny plan (a few euros)."""
+    pct = out.total_eur / out.total_contributions_eur * 100
+    rounding = (100 + pct) * 0.005 / out.total_contributions_eur
+    assert out.total_pct_of_contributions == pytest.approx(pct, abs=0.005 + rounding + 1e-9)
+
+
+def test_pct_of_contributions_for_a_tiny_plan_is_consistent_with_the_rounded_outputs(ctx):
+    """Regression: found by Hypothesis on CI (P01, 1.84375 EUR/month, 1 year): 54.28 vs 54.2948 from rounded outputs."""
+    out = _costs(ctx, "P01", 1.84375, 1, fee_per_execution=1.0)
+    _assert_pct_of_contributions(out)
+    assert out.total_pct_of_contributions == 54.28
+
+
 @settings(max_examples=60, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(
     product=st.sampled_from([f"P{i:02d}" for i in range(1, 41)]),
@@ -340,4 +355,4 @@ def test_property_costs_are_non_negative_and_add_up(ctx, product, monthly, years
     for y in out.by_year:
         assert min(y.ter_eur, y.fees_eur, y.entry_eur) >= 0
     assert sum(r.amount_eur for r in out.rows) == pytest.approx(out.total_eur, abs=0.02)
-    assert out.total_pct_of_contributions == pytest.approx(out.total_eur / out.total_contributions_eur * 100, abs=0.01)
+    _assert_pct_of_contributions(out)
