@@ -30,8 +30,7 @@ def test_debug_sse_streams_fixture_over_real_sse():
 
     events = _parse_sse(res.text)
     expected = [
-        json.loads(x)["event"]
-        for x in (FIXTURE_DIR / "advice_refusal.jsonl").read_text(encoding="utf-8").splitlines()
+        json.loads(x)["event"] for x in (FIXTURE_DIR / "advice_refusal.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert [name for name, _ in events] == expected
     for name, data in events:

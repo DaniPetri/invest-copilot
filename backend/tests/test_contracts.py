@@ -15,6 +15,6 @@ def test_contract_files_exist_and_are_current(tmp_path):
     for fresh in written:
         committed = CONTRACT_DIR / fresh.name
         assert committed.exists(), f"{fresh.name} missing: run make contracts"
-        assert json.loads(committed.read_text(encoding="utf-8")) == json.loads(
-            fresh.read_text(encoding="utf-8")
-        ), f"{fresh.name} is stale: run make contracts"
+        assert json.loads(committed.read_text(encoding="utf-8")) == json.loads(fresh.read_text(encoding="utf-8")), (
+            f"{fresh.name} is stale: run make contracts"
+        )

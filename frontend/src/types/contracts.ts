@@ -40,6 +40,7 @@ export interface Company {
   sector: string
   country: string
   market_cap_eur_m: number
+  exclusion_flags: Exclusion[]
 }
 
 export interface Holding {

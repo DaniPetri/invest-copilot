@@ -49,6 +49,11 @@ def contracts() -> int:
     return run(["uv", "run", "python", "-m", "app.schemas.export"], BACKEND)
 
 
+def data() -> int:
+    """Generate the synthetic universe into data/generated/ (seed 20260920)."""
+    return run(["uv", "run", "python", "-m", "app.data.generate"], BACKEND)
+
+
 def dev() -> int:
     """API on :8000 and web on :5173 together; Ctrl-C stops both."""
     procs = [
@@ -85,7 +90,7 @@ def not_yet(name: str, milestone: str) -> Callable[[], int]:
 
 TARGETS: dict[str, Callable[[], int]] = {
     "setup": setup,
-    "data": not_yet("data", "M2"),
+    "data": data,
     "ingest": not_yet("ingest", "M3"),
     "dev": dev,
     "test": test,

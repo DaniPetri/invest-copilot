@@ -35,9 +35,7 @@ BLOCKS = [
     {"type": "handoff", "reason": "r", "actions": [{"id": "a", "label": "A"}]},
     {
         "type": "citations",
-        "items": [
-            {"chunk_id": "KID:P01:p1:ziele", "product_name": "A", "page": 1, "section": "Ziele", "snippet": "s"}
-        ],
+        "items": [{"chunk_id": "KID:P01:p1:ziele", "product_name": "A", "page": 1, "section": "Ziele", "snippet": "s"}],
     },
 ]
 
@@ -87,8 +85,17 @@ EVENT_EXAMPLES = {
 
 def test_every_sse_event_name_from_the_spec_is_covered():
     spec_events = {
-        "trace", "router", "tool_start", "tool_end", "retrieval", "text_delta",
-        "ui", "guardrail", "usage", "done", "error",
+        "trace",
+        "router",
+        "tool_start",
+        "tool_end",
+        "retrieval",
+        "text_delta",
+        "ui",
+        "guardrail",
+        "usage",
+        "done",
+        "error",
     }
     assert set(EVENT_EXAMPLES) == spec_events
     for name, data in EVENT_EXAMPLES.items():
@@ -111,11 +118,25 @@ def test_router_intents_and_confidence_bounds():
 
 def test_product_isin_prefix_enforced():
     base = {
-        "id": "P01", "isin": "XD0000000782", "name": "n", "issuer": "i", "asset_class": "equity_etf",
-        "region": "Welt", "sfdr": 8, "exclusions": [], "ter": 0.002, "entry_cost": 0.0,
-        "distribution": "thesaurierend", "savings_plan_min_eur": None, "replication": "physisch",
-        "inception": "2020-01-01", "fund_size_eur_m": 100.0, "benchmark": "b", "sri": 4,
-        "recommended_holding_years": 5, "holdings": [],
+        "id": "P01",
+        "isin": "XD0000000782",
+        "name": "n",
+        "issuer": "i",
+        "asset_class": "equity_etf",
+        "region": "Welt",
+        "sfdr": 8,
+        "exclusions": [],
+        "ter": 0.002,
+        "entry_cost": 0.0,
+        "distribution": "thesaurierend",
+        "savings_plan_min_eur": None,
+        "replication": "physisch",
+        "inception": "2020-01-01",
+        "fund_size_eur_m": 100.0,
+        "benchmark": "b",
+        "sri": 4,
+        "recommended_holding_years": 5,
+        "holdings": [],
     }
     assert Product.model_validate(base)
     with pytest.raises(ValidationError):
@@ -124,6 +145,11 @@ def test_product_isin_prefix_enforced():
 
 def test_all_seven_tools_have_models():
     assert set(TOOL_MODELS) == {
-        "screen_products", "search_kid", "portfolio_lookthrough", "explain_move",
-        "simulate_savings_plan", "cost_projection", "suitability_check",
+        "screen_products",
+        "search_kid",
+        "portfolio_lookthrough",
+        "explain_move",
+        "simulate_savings_plan",
+        "cost_projection",
+        "suitability_check",
     }

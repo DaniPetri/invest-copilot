@@ -33,6 +33,9 @@ class Company(Contract):
     sector: str
     country: str
     market_cap_eur_m: float = Field(ge=0)
+    exclusion_flags: list[Exclusion] = Field(
+        default_factory=list, description="Controversial activities; products with a matching exclusion never hold it"
+    )
 
 
 class Holding(Contract):

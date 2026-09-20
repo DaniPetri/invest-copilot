@@ -7,6 +7,20 @@
           "title": "Country",
           "type": "string"
         },
+        "exclusion_flags": {
+          "description": "Controversial activities; products with a matching exclusion never hold it",
+          "items": {
+            "enum": [
+              "Waffen",
+              "Fossile",
+              "Tabak",
+              "Glücksspiel"
+            ],
+            "type": "string"
+          },
+          "title": "Exclusion Flags",
+          "type": "array"
+        },
         "id": {
           "title": "Id",
           "type": "string"

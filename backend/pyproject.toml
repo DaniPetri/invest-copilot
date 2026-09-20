@@ -37,3 +37,6 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/data/generate.py" = ["E501"]  # product/event tables stay one row per line
