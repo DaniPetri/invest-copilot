@@ -115,4 +115,40 @@ uv run python scripts/tasks.py test                                             
 - The `search_kid` tool wraps `get_index().retrieve(...)`; put `quarantined_ids` into the `retrieval` SSE event and the trace. `Chunk.text` is raw section text; the orchestrator wraps it in `<document id=...>` tags.
 - Chunk IDs in citations are section IDs, e.g. `KID:P22:p1:risikoindikator`.
 
-**Next step**: M4, deterministic tools and MCP (`screen_products` first).
+## M4 · Tools and MCP — done
+
+**Done**
+- `backend/app/tools/`: `screener.py`, `suitability.py`, `costs.py`, `lookthrough.py`, `attribution.py`, `montecarlo.py`, `search.py` (wraps M3 retrieval), `base.py` (`ToolContext`, `ToolError` with `not_found` / `invalid`), `registry.py`.
+- `registry.py`: `TOOLS` (one `Tool` per contract, asserted equal to `TOOL_MODELS`), `anthropic_tool_definitions()` (all `strict: true`), `ResultStore` (request-scoped `r1`, `r2`, ...), `execute(name, args, ctx, results)` returning a `ToolResult` (payload + German summary).
+- Strict schemas: built with the Anthropic SDK's own `transform_schema` (strips `minimum`/`maximum`/`exclusiveMinimum` etc. into the field description, forces `additionalProperties: false`), then every property is made required and nullable. Checked against the structured-outputs docs (platform.claude.com): no `minLength`/`maxLength`/`maxItems`/`pattern`/`default`/`oneOf`/`allOf`, `minItems` only 0 or 1, `format` from the supported list, only internal `$ref`. Nulls sent for "not specified" are dropped where the field has a default; the stripped constraints are still enforced by validating with the original pydantic model.
+- `POST /api/tools/{name}` in `main.py` (404 unknown tool or ID, 422 invalid input, 503 missing data or index). `backend/app/mcp_server.py` (FastMCP, stdio, `python -m app.mcp_server`); each tool takes one argument `params`.
+- Contract change, done together: `CostProjectionInput.fee_per_execution` (default 1.0); `contracts/tools.schema.json` regenerated. Also `app/fmt.py` (German number formats, moved out of `kid_pdf.py`) and `Prices.index_on_or_before`.
+
+**Tests**: 270 backend (was 140) + 23 frontend, all green; `ruff` clean. New: `test_tools_products.py`, `test_tools_portfolio.py`, `test_tools_montecarlo.py`, `test_tools_registry.py` (API, MCP, strict schema walk, search tool). Hypothesis properties: percentiles monotonic per year, exposures sum to 100 % (company, sector, country), overlap symmetric and in [0, 1], costs non-negative and adding up, simulation deterministic, every screener hit satisfies every active filter, attribution contributions add up. Hypothesis found one real edge (a Saturday-to-Sunday window has no trading day): the tool rejects it with `invalid`, covered by a test.
+
+**How to verify**
+```
+uv run python scripts/tasks.py test
+cd backend && uv run pytest tests/test_tools_montecarlo.py -q --durations=3   # 5,000 paths x 30 years ~ 60 ms
+curl -X POST localhost:8000/api/tools/suitability_check -H "content-type: application/json" -d '{"customer_id":"elif","product_id":"P22"}'
+uv run python -m app.mcp_server        # stdio MCP server (needs data/generated and, for search_kid, `make ingest`)
+```
+
+**Worked examples** (data/generated, seed 20260920)
+- Markus look-through: 3 products, 60 positions, top company 5.1 %, top-10 44.5 %, Technologie 59.9 %, US 33.8 %; flags `single_company_over_5pct` and `top10_over_30pct`; overlaps P03/P22 46.6 %, P03/P11 38.9 %, P11/P22 16.2 %.
+- 50 EUR/month, 20 years, P03: paid in 12,000 EUR; p5 / p50 / p95 = 13,716 / 28,899 / 66,513 EUR; explicit costs 240 EUR; 2.4 % of paths end below the payments; KESt estimate 4,647.28 EUR.
+- Elif vs P22 (SRI 5 ETF): `fail`, because of risk (class 2 of 5 fits up to SRI 3); knowledge, experience, horizon and sustainability pass.
+- Cost check against design/03: 50 EUR/month, 10 years, P07: 165.38 EUR = 2.8 % of 6,000 EUR (design shows 165 EUR, 2.8 %).
+
+**Open decision (data, from M2): August 2026 goes up, not down.** The simulated market rose about 9 % in August 2026 (every equity product +8 to +12 %); the E12 chip shock is there (P22 -4.8 % on Aug 11-13) but the month ends higher. `explain_move` for Markus, Aug 1-31, therefore returns +1,079.66 EUR (+9.97 %) with E12 as the only matched event, and worst-to-best P22 +461.71 / P03 +403.55 / P11 +214.40. The tool is right; the demo question "Warum ist mein Depot im August gefallen?" (SPEC demo, fixture `depot_august`, design/04) then has a false premise. Options: (1) adjust the simulated market path so August 2026 is a decline (changes the generated data, the hash, the KID scenario numbers and the retrieval ablation, so re-run M2/M3 checks); (2) rephrase the demo question ("Wie hat sich mein Depot im August entwickelt?"). Recommended: (1), before M6.
+
+**Known gaps / decisions**
+- Strict schemas are not yet validated by a live API call (planned spike at the start of M6, with the structured-output parameters).
+- Monte Carlo: the SPEC asks for a stationary block bootstrap with 20-day blocks on daily returns; a literal daily version cannot meet 300 ms for 5,000 paths x 30 years (about 38 M draws). Implemented at the plan's monthly step instead: a month is a 21-day window, and the next month continues after it with probability 0.95^21 (34 %), else restarts at a random day (circular history). `month_indices` is tested for exactly that continuation rate. Fund costs (TER) stay in the returns; `total_costs` are explicit fees and entry costs only.
+- `cost_projection` assumes no market return (balance = payments so far; TER on `start + 6.5 x monthly`); that reproduces the design example.
+- Suitability thresholds are my choices, kept in `suitability.py` and unit-tested: risk class 1-5 fits SRI up to 2/3/4/5/7, one step above is `warn`, more is `fail`; knowledge and experience deficits of 1 level warn, 2 fail (synthetic replication or SRI >= 6 needs advanced knowledge, active and mixed funds need some experience); horizon below the recommended holding period warns, below half fails; wanting Art. 9 but getting Art. 6 fails, other gaps warn.
+- `screen_products`: empty lists and `savings_plan=false` mean "no filter"; all listed exclusions must be present. `n_companies` in the look-through counts every holding ID (companies and bond issuers).
+- MCP tools take a single `params` argument (FastMCP wraps a model parameter that way).
+- The docs list no cap on optional parameters for strict tools; making every field required-and-nullable was a precaution.
+
+**Next step**: M5, frontend in fixture mode. Before M6, decide the August 2026 data question above.

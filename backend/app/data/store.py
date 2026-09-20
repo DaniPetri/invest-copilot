@@ -30,6 +30,13 @@ class Prices:
         i = int(np.searchsorted(self.dates, np.datetime64(d)))
         return min(i, len(self.dates) - 1)
 
+    def index_on_or_before(self, d) -> int:
+        """Index of the last business day on or before `d`; raises if `d` precedes the first price."""
+        i = int(np.searchsorted(self.dates, np.datetime64(d), side="right")) - 1
+        if i < 0:
+            raise ValueError(f"{d} is before the first price date {self.dates[0]}")
+        return i
+
 
 def _read_prices(path: Path) -> tuple[np.ndarray, dict[str, np.ndarray]]:
     with path.open(encoding="utf-8", newline="") as fh:

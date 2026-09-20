@@ -2,12 +2,18 @@ import asyncio
 import json
 from collections.abc import AsyncIterator
 from pathlib import Path
+from typing import Annotated, Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
 from .config import REPO_ROOT, get_settings
+from .data.store import DataMissingError, get_store
+from .rag.search import IndexMissingError
+from .schemas.tools import ToolResult
+from .tools.base import ToolContext, ToolError
+from .tools.registry import execute
 
 FIXTURE_DIR = REPO_ROOT / "frontend" / "fixtures" / "sse"
 
@@ -52,3 +58,24 @@ def debug_sse(name: str, fast: bool = False) -> EventSourceResponse:
     if not path.is_file() or path.parent != FIXTURE_DIR:
         raise HTTPException(status_code=404, detail="unknown fixture")
     return EventSourceResponse(_replay(path, fast))
+
+
+def get_tool_context() -> ToolContext:
+    return ToolContext(get_store())
+
+
+@app.post("/api/tools/{name}")
+def run_tool(
+    name: str,
+    body: Annotated[dict[str, Any], Body()],
+    ctx: Annotated[ToolContext, Depends(get_tool_context)],
+) -> ToolResult:
+    """Run a deterministic tool without the LLM (SPEC §7): instant screens such as the simulator use this.
+
+    Each call has its own request-scoped result store, so `result_id` is always `r1`."""
+    try:
+        return execute(name, body, ctx)
+    except ToolError as e:
+        raise HTTPException(status_code=404 if e.code == "not_found" else 422, detail=e.message) from None
+    except (DataMissingError, IndexMissingError) as e:
+        raise HTTPException(status_code=503, detail=str(e)) from None

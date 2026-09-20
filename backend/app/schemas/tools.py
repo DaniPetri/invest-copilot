@@ -198,6 +198,7 @@ class CostProjectionInput(Contract):
     product_id: str
     monthly_eur: float = Field(gt=0)
     years: int = Field(ge=1, le=40)
+    fee_per_execution: float = Field(default=1.0, ge=0, description="Savings plan fee per monthly execution, EUR")
 
 
 class CostRow(Contract):

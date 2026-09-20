@@ -14,6 +14,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas as rl_canvas
 from reportlab.platypus import BaseDocTemplate, Frame, PageBreak, PageTemplate, Paragraph, Spacer, Table, TableStyle
 
+from ..fmt import de_num, de_pct
 from ..schemas.products import Product
 
 # (page, heading printed in the PDF, slug used in chunk IDs)
@@ -56,16 +57,6 @@ SRI_WORDS = {
     6: "hohes Risiko",
     7: "höchstes Risiko",
 }
-
-
-def de_num(x: float, decimals: int = 0) -> str:
-    """German number format: 1.234,56"""
-    s = f"{abs(x):,.{decimals}f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    return f"-{s}" if x < 0 and round(x, decimals) != 0 else s
-
-
-def de_pct(fraction: float, decimals: int = 2) -> str:
-    return f"{de_num(fraction * 100, decimals)} %"
 
 
 def chunk_id(product_id: str, page: int, slug: str) -> str:

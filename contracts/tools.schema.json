@@ -86,6 +86,13 @@
     "CostProjectionInput": {
       "additionalProperties": false,
       "properties": {
+        "fee_per_execution": {
+          "default": 1.0,
+          "description": "Savings plan fee per monthly execution, EUR",
+          "minimum": 0,
+          "title": "Fee Per Execution",
+          "type": "number"
+        },
         "monthly_eur": {
           "exclusiveMinimum": 0,
           "title": "Monthly Eur",
