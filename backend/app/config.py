@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     orchestrator_model: str = "claude-sonnet-5"
     judge_model: str = "claude-opus-5"
     rerank: bool = False
+    embed_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    rerank_model: str = "jinaai/jina-reranker-v2-base-multilingual"
+    # Outside data/generated (`make data` wipes it) and outside the repo: model files sit in deep folders, and a
+    # long checkout path overflows Windows' 260-character limit. Override with MODEL_CACHE_DIR.
+    model_cache_dir: Path = Path.home() / ".cache" / "invest-copilot" / "fastembed"
     data_dir: Path = REPO_ROOT / "data" / "generated"
     cassette_dir: Path = REPO_ROOT / "fixtures" / "cassettes"
 

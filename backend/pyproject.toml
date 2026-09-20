@@ -27,7 +27,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = [".", ".."]  # ".." makes the repo-level evals package importable
 testpaths = ["tests"]
 asyncio_mode = "auto"
 

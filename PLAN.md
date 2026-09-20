@@ -48,7 +48,7 @@ uv run python scripts/tasks.py test
 **Done when**
 ```
 uv run python scripts/tasks.py ingest
-uv run python evals/retrieval_quick.py          # prints the ablation table
+cd backend && uv run python ../evals/retrieval_quick.py    # prints the ablation table, exits 1 below the gate
 cd backend && uv run pytest tests/test_retrieval.py -q
 ```
 

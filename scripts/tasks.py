@@ -54,6 +54,11 @@ def data() -> int:
     return run(["uv", "run", "python", "-m", "app.data.generate"], BACKEND)
 
 
+def ingest() -> int:
+    """Parse the KID PDFs and build the Qdrant (dense) and BM25 (lexical) indexes in data/generated/."""
+    return run(["uv", "run", "python", "-m", "app.rag.index"], BACKEND)
+
+
 def dev() -> int:
     """API on :8000 and web on :5173 together; Ctrl-C stops both."""
     procs = [
@@ -91,7 +96,7 @@ def not_yet(name: str, milestone: str) -> Callable[[], int]:
 TARGETS: dict[str, Callable[[], int]] = {
     "setup": setup,
     "data": data,
-    "ingest": not_yet("ingest", "M3"),
+    "ingest": ingest,
     "dev": dev,
     "test": test,
     "eval": not_yet("eval", "M7"),
