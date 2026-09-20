@@ -1,0 +1,217 @@
+{
+  "$defs": {
+    "Customer": {
+      "additionalProperties": false,
+      "properties": {
+        "age": {
+          "title": "Age",
+          "type": "integer"
+        },
+        "cash_eur": {
+          "title": "Cash Eur",
+          "type": "number"
+        },
+        "city": {
+          "title": "City",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "persona": {
+          "title": "Persona",
+          "type": "string"
+        },
+        "positions": {
+          "items": {
+            "$ref": "#/$defs/Position"
+          },
+          "title": "Positions",
+          "type": "array"
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "transactions": {
+          "items": {
+            "$ref": "#/$defs/Transaction"
+          },
+          "title": "Transactions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "age",
+        "city",
+        "persona",
+        "profile",
+        "positions",
+        "cash_eur",
+        "transactions"
+      ],
+      "title": "Customer",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "units": {
+          "minimum": 0,
+          "title": "Units",
+          "type": "number"
+        }
+      },
+      "required": [
+        "product_id",
+        "units"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Profile": {
+      "additionalProperties": false,
+      "description": "MiFID-style investor profile.",
+      "properties": {
+        "experience": {
+          "additionalProperties": {
+            "enum": [
+              "keine",
+              "basis",
+              "erweitert"
+            ],
+            "type": "string"
+          },
+          "propertyNames": {
+            "enum": [
+              "equity_etf",
+              "equity_fund",
+              "bond_fund",
+              "mixed_fund",
+              "money_market"
+            ]
+          },
+          "title": "Experience",
+          "type": "object"
+        },
+        "horizon_years": {
+          "minimum": 1,
+          "title": "Horizon Years",
+          "type": "integer"
+        },
+        "knowledge": {
+          "additionalProperties": {
+            "enum": [
+              "keine",
+              "basis",
+              "erweitert"
+            ],
+            "type": "string"
+          },
+          "propertyNames": {
+            "enum": [
+              "equity_etf",
+              "equity_fund",
+              "bond_fund",
+              "mixed_fund",
+              "money_market"
+            ]
+          },
+          "title": "Knowledge",
+          "type": "object"
+        },
+        "loss_tolerance": {
+          "enum": [
+            "niedrig",
+            "mittel",
+            "hoch"
+          ],
+          "title": "Loss Tolerance",
+          "type": "string"
+        },
+        "prefers_distribution": {
+          "default": false,
+          "title": "Prefers Distribution",
+          "type": "boolean"
+        },
+        "risk_class": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Risk Class",
+          "type": "integer"
+        },
+        "sustainability_preference": {
+          "enum": [
+            "keine",
+            "art8",
+            "art9"
+          ],
+          "title": "Sustainability Preference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "risk_class",
+        "horizon_years",
+        "knowledge",
+        "experience",
+        "loss_tolerance",
+        "sustainability_preference"
+      ],
+      "title": "Profile",
+      "type": "object"
+    },
+    "Transaction": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_eur": {
+          "title": "Amount Eur",
+          "type": "number"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "sparplan",
+            "kauf",
+            "verkauf"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "units": {
+          "title": "Units",
+          "type": "number"
+        }
+      },
+      "required": [
+        "date",
+        "product_id",
+        "units",
+        "amount_eur",
+        "kind"
+      ],
+      "title": "Transaction",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "defs"
+}

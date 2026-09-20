@@ -1,0 +1,1495 @@
+{
+  "$defs": {
+    "AttributionBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "change_eur": {
+          "title": "Change Eur",
+          "type": "number"
+        },
+        "change_pct": {
+          "title": "Change Pct",
+          "type": "number"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/MarketEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/AttributionRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "type": {
+          "const": "attribution",
+          "default": "attribution",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rows",
+        "events",
+        "change_eur",
+        "change_pct"
+      ],
+      "title": "AttributionBlock",
+      "type": "object"
+    },
+    "AttributionRow": {
+      "additionalProperties": false,
+      "properties": {
+        "contribution_pct": {
+          "description": "Share of total portfolio move, in percentage points",
+          "title": "Contribution Pct",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pnl_eur": {
+          "title": "Pnl Eur",
+          "type": "number"
+        },
+        "pnl_pct": {
+          "title": "Pnl Pct",
+          "type": "number"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id",
+        "name",
+        "pnl_eur",
+        "pnl_pct",
+        "contribution_pct"
+      ],
+      "title": "AttributionRow",
+      "type": "object"
+    },
+    "CitationItem": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk_id": {
+          "title": "Chunk Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "product_name": {
+          "title": "Product Name",
+          "type": "string"
+        },
+        "section": {
+          "title": "Section",
+          "type": "string"
+        },
+        "snippet": {
+          "title": "Snippet",
+          "type": "string"
+        }
+      },
+      "required": [
+        "chunk_id",
+        "product_name",
+        "page",
+        "section",
+        "snippet"
+      ],
+      "title": "CitationItem",
+      "type": "object"
+    },
+    "CitationsBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/CitationItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "type": {
+          "const": "citations",
+          "default": "citations",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "title": "CitationsBlock",
+      "type": "object"
+    },
+    "CostBreakdownBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/CostRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "total": {
+          "title": "Total",
+          "type": "number"
+        },
+        "total_pct_of_contributions": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Pct Of Contributions"
+        },
+        "type": {
+          "const": "cost_breakdown",
+          "default": "cost_breakdown",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rows",
+        "total"
+      ],
+      "title": "CostBreakdownBlock",
+      "type": "object"
+    },
+    "CostRow": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_eur": {
+          "minimum": 0,
+          "title": "Amount Eur",
+          "type": "number"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "amount_eur"
+      ],
+      "title": "CostRow",
+      "type": "object"
+    },
+    "DoneData": {
+      "additionalProperties": false,
+      "properties": {
+        "cost_eur": {
+          "minimum": 0,
+          "title": "Cost Eur",
+          "type": "number"
+        },
+        "total_ms": {
+          "minimum": 0,
+          "title": "Total Ms",
+          "type": "integer"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "total_ms",
+        "cost_eur"
+      ],
+      "title": "DoneData",
+      "type": "object"
+    },
+    "DoneEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/DoneData"
+        },
+        "event": {
+          "const": "done",
+          "default": "done",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "DoneEvent",
+      "type": "object"
+    },
+    "ErrorData": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ErrorData",
+      "type": "object"
+    },
+    "ErrorEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ErrorData"
+        },
+        "event": {
+          "const": "error",
+          "default": "error",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "ErrorEvent",
+      "type": "object"
+    },
+    "ExposureBarsBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {
+          "enum": [
+            "sector",
+            "country",
+            "company"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/ExposureRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "type": {
+          "const": "exposure_bars",
+          "default": "exposure_bars",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension",
+        "rows"
+      ],
+      "title": "ExposureBarsBlock",
+      "type": "object"
+    },
+    "ExposureRow": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "weight"
+      ],
+      "title": "ExposureRow",
+      "type": "object"
+    },
+    "FanChartBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "contributions": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Contributions",
+          "type": "array"
+        },
+        "p25": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P25",
+          "type": "array"
+        },
+        "p5": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P5",
+          "type": "array"
+        },
+        "p50": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P50",
+          "type": "array"
+        },
+        "p75": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P75",
+          "type": "array"
+        },
+        "p95": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P95",
+          "type": "array"
+        },
+        "type": {
+          "const": "fan_chart",
+          "default": "fan_chart",
+          "title": "Type",
+          "type": "string"
+        },
+        "years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Years",
+          "type": "array"
+        }
+      },
+      "required": [
+        "years",
+        "p5",
+        "p25",
+        "p50",
+        "p75",
+        "p95",
+        "contributions"
+      ],
+      "title": "FanChartBlock",
+      "type": "object"
+    },
+    "FilterChip": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "default": true,
+          "title": "Active",
+          "type": "boolean"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "label"
+      ],
+      "title": "FilterChip",
+      "type": "object"
+    },
+    "GuardrailCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "flag",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "status",
+        "detail"
+      ],
+      "title": "GuardrailCheck",
+      "type": "object"
+    },
+    "GuardrailData": {
+      "additionalProperties": false,
+      "properties": {
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/GuardrailCheck"
+          },
+          "title": "Checks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "checks"
+      ],
+      "title": "GuardrailData",
+      "type": "object"
+    },
+    "GuardrailEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/GuardrailData"
+        },
+        "event": {
+          "const": "guardrail",
+          "default": "guardrail",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "GuardrailEvent",
+      "type": "object"
+    },
+    "HandoffAction": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "HandoffAction",
+      "type": "object"
+    },
+    "HandoffBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/HandoffAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "type": {
+          "const": "handoff",
+          "default": "handoff",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "actions"
+      ],
+      "title": "HandoffBlock",
+      "type": "object"
+    },
+    "MarketEvent": {
+      "additionalProperties": false,
+      "description": "Ground truth for attribution: a dated shock to the whole market or to single sectors.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "duration_days": {
+          "minimum": 1,
+          "title": "Duration Days",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sectors": {
+          "description": "Empty list = whole market",
+          "items": {
+            "type": "string"
+          },
+          "title": "Sectors",
+          "type": "array"
+        },
+        "shock_pct": {
+          "title": "Shock Pct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "name",
+        "description",
+        "sectors",
+        "shock_pct",
+        "duration_days"
+      ],
+      "title": "MarketEvent",
+      "type": "object"
+    },
+    "OverlapMatrixBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "matrix": {
+          "items": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": "Matrix",
+          "type": "array"
+        },
+        "products": {
+          "items": {
+            "$ref": "#/$defs/OverlapProduct"
+          },
+          "title": "Products",
+          "type": "array"
+        },
+        "type": {
+          "const": "overlap_matrix",
+          "default": "overlap_matrix",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "products",
+        "matrix"
+      ],
+      "title": "OverlapMatrixBlock",
+      "type": "object"
+    },
+    "OverlapProduct": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id",
+        "name"
+      ],
+      "title": "OverlapProduct",
+      "type": "object"
+    },
+    "ProductCardsBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "filters": {
+          "description": "'Das habe ich verstanden' chips",
+          "items": {
+            "$ref": "#/$defs/FilterChip"
+          },
+          "title": "Filters",
+          "type": "array"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ScreenItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "total_matches": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Matches"
+        },
+        "type": {
+          "const": "product_cards",
+          "default": "product_cards",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "title": "ProductCardsBlock",
+      "type": "object"
+    },
+    "RetrievalChunk": {
+      "additionalProperties": false,
+      "properties": {
+        "flags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "score": {
+          "title": "Score",
+          "type": "number"
+        },
+        "section": {
+          "title": "Section",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "product_id",
+        "page",
+        "section",
+        "score"
+      ],
+      "title": "RetrievalChunk",
+      "type": "object"
+    },
+    "RetrievalData": {
+      "additionalProperties": false,
+      "properties": {
+        "chunks": {
+          "items": {
+            "$ref": "#/$defs/RetrievalChunk"
+          },
+          "title": "Chunks",
+          "type": "array"
+        },
+        "mode": {
+          "enum": [
+            "hybrid",
+            "dense",
+            "bm25",
+            "hybrid_rerank"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "query": {
+          "title": "Query",
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "mode",
+        "chunks"
+      ],
+      "title": "RetrievalData",
+      "type": "object"
+    },
+    "RetrievalEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/RetrievalData"
+        },
+        "event": {
+          "const": "retrieval",
+          "default": "retrieval",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "RetrievalEvent",
+      "type": "object"
+    },
+    "RiskMeterBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "sri": {
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Sri",
+          "type": "integer"
+        },
+        "type": {
+          "const": "risk_meter",
+          "default": "risk_meter",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sri"
+      ],
+      "title": "RiskMeterBlock",
+      "type": "object"
+    },
+    "RouterData": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "flags": {
+          "$ref": "#/$defs/RouterFlags"
+        },
+        "intent": {
+          "enum": [
+            "discover",
+            "product_question",
+            "portfolio_insight",
+            "simulate",
+            "learn",
+            "advice_request",
+            "out_of_scope"
+          ],
+          "title": "Intent",
+          "type": "string"
+        },
+        "latency_ms": {
+          "minimum": 0,
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "intent",
+        "flags",
+        "confidence",
+        "model",
+        "latency_ms"
+      ],
+      "title": "RouterData",
+      "type": "object"
+    },
+    "RouterEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/RouterData"
+        },
+        "event": {
+          "const": "router",
+          "default": "router",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "RouterEvent",
+      "type": "object"
+    },
+    "RouterFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "advice_request": {
+          "default": false,
+          "title": "Advice Request",
+          "type": "boolean"
+        },
+        "injection_suspected": {
+          "default": false,
+          "title": "Injection Suspected",
+          "type": "boolean"
+        },
+        "pii_present": {
+          "default": false,
+          "title": "Pii Present",
+          "type": "boolean"
+        }
+      },
+      "title": "RouterFlags",
+      "type": "object"
+    },
+    "ScreenItem": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_class": {
+          "enum": [
+            "equity_etf",
+            "equity_fund",
+            "bond_fund",
+            "mixed_fund",
+            "money_market"
+          ],
+          "title": "Asset Class",
+          "type": "string"
+        },
+        "distribution": {
+          "enum": [
+            "thesaurierend",
+            "ausschüttend"
+          ],
+          "title": "Distribution",
+          "type": "string"
+        },
+        "isin": {
+          "title": "Isin",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "region": {
+          "enum": [
+            "Europa",
+            "USA",
+            "Welt",
+            "Schwellenländer",
+            "Österreich"
+          ],
+          "title": "Region",
+          "type": "string"
+        },
+        "savings_plan_min_eur": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Savings Plan Min Eur"
+        },
+        "sfdr": {
+          "enum": [
+            6,
+            8,
+            9
+          ],
+          "title": "Sfdr",
+          "type": "integer"
+        },
+        "sri": {
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Sri",
+          "type": "integer"
+        },
+        "ter": {
+          "title": "Ter",
+          "type": "number"
+        },
+        "why_matched": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Why Matched",
+          "type": "array"
+        }
+      },
+      "required": [
+        "product_id",
+        "name",
+        "isin",
+        "asset_class",
+        "region",
+        "sfdr",
+        "sri",
+        "ter",
+        "distribution",
+        "savings_plan_min_eur",
+        "why_matched"
+      ],
+      "title": "ScreenItem",
+      "type": "object"
+    },
+    "SuitabilityBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "reasons": {
+          "items": {
+            "$ref": "#/$defs/SuitabilityReason"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "type": {
+          "const": "suitability",
+          "default": "suitability",
+          "title": "Type",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        }
+      },
+      "required": [
+        "verdict",
+        "reasons"
+      ],
+      "title": "SuitabilityBlock",
+      "type": "object"
+    },
+    "SuitabilityReason": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_field": {
+          "title": "Profile Field",
+          "type": "string"
+        },
+        "rule": {
+          "enum": [
+            "risk",
+            "knowledge",
+            "experience",
+            "horizon",
+            "sustainability"
+          ],
+          "title": "Rule",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "status",
+        "text",
+        "profile_field"
+      ],
+      "title": "SuitabilityReason",
+      "type": "object"
+    },
+    "TextBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "citations": {
+          "description": "Chunk IDs cited in the text",
+          "items": {
+            "type": "string"
+          },
+          "title": "Citations",
+          "type": "array"
+        },
+        "markdown": {
+          "title": "Markdown",
+          "type": "string"
+        },
+        "type": {
+          "const": "text",
+          "default": "text",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "markdown"
+      ],
+      "title": "TextBlock",
+      "type": "object"
+    },
+    "TextDeltaData": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TextDeltaData",
+      "type": "object"
+    },
+    "TextDeltaEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/TextDeltaData"
+        },
+        "event": {
+          "const": "text_delta",
+          "default": "text_delta",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "TextDeltaEvent",
+      "type": "object"
+    },
+    "ToolEndData": {
+      "additionalProperties": false,
+      "properties": {
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "name": {
+          "enum": [
+            "screen_products",
+            "search_kid",
+            "portfolio_lookthrough",
+            "explain_move",
+            "simulate_savings_plan",
+            "cost_projection",
+            "suitability_check"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "result_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Result Id"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "name",
+        "ok",
+        "duration_ms",
+        "result_id",
+        "summary"
+      ],
+      "title": "ToolEndData",
+      "type": "object"
+    },
+    "ToolEndEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ToolEndData"
+        },
+        "event": {
+          "const": "tool_end",
+          "default": "tool_end",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "ToolEndEvent",
+      "type": "object"
+    },
+    "ToolStartData": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "additionalProperties": true,
+          "title": "Args",
+          "type": "object"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "screen_products",
+            "search_kid",
+            "portfolio_lookthrough",
+            "explain_move",
+            "simulate_savings_plan",
+            "cost_projection",
+            "suitability_check"
+          ],
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "name",
+        "args"
+      ],
+      "title": "ToolStartData",
+      "type": "object"
+    },
+    "ToolStartEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ToolStartData"
+        },
+        "event": {
+          "const": "tool_start",
+          "default": "tool_start",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "ToolStartEvent",
+      "type": "object"
+    },
+    "TraceData": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "live",
+            "record",
+            "replay"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "started_at": {
+          "title": "Started At",
+          "type": "string"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "started_at",
+        "mode"
+      ],
+      "title": "TraceData",
+      "type": "object"
+    },
+    "TraceEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/TraceData"
+        },
+        "event": {
+          "const": "trace",
+          "default": "trace",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "TraceEvent",
+      "type": "object"
+    },
+    "UIData": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attribution": "#/$defs/AttributionBlock",
+                "citations": "#/$defs/CitationsBlock",
+                "cost_breakdown": "#/$defs/CostBreakdownBlock",
+                "exposure_bars": "#/$defs/ExposureBarsBlock",
+                "fan_chart": "#/$defs/FanChartBlock",
+                "handoff": "#/$defs/HandoffBlock",
+                "overlap_matrix": "#/$defs/OverlapMatrixBlock",
+                "product_cards": "#/$defs/ProductCardsBlock",
+                "risk_meter": "#/$defs/RiskMeterBlock",
+                "suitability": "#/$defs/SuitabilityBlock",
+                "text": "#/$defs/TextBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextBlock"
+              },
+              {
+                "$ref": "#/$defs/ProductCardsBlock"
+              },
+              {
+                "$ref": "#/$defs/RiskMeterBlock"
+              },
+              {
+                "$ref": "#/$defs/FanChartBlock"
+              },
+              {
+                "$ref": "#/$defs/ExposureBarsBlock"
+              },
+              {
+                "$ref": "#/$defs/OverlapMatrixBlock"
+              },
+              {
+                "$ref": "#/$defs/AttributionBlock"
+              },
+              {
+                "$ref": "#/$defs/CostBreakdownBlock"
+              },
+              {
+                "$ref": "#/$defs/SuitabilityBlock"
+              },
+              {
+                "$ref": "#/$defs/HandoffBlock"
+              },
+              {
+                "$ref": "#/$defs/CitationsBlock"
+              }
+            ]
+          },
+          "title": "Blocks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "blocks"
+      ],
+      "title": "UIData",
+      "type": "object"
+    },
+    "UIEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/UIData"
+        },
+        "event": {
+          "const": "ui",
+          "default": "ui",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "UIEvent",
+      "type": "object"
+    },
+    "UsageData": {
+      "additionalProperties": false,
+      "properties": {
+        "cost_eur": {
+          "minimum": 0,
+          "title": "Cost Eur",
+          "type": "number"
+        },
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "model",
+        "input_tokens",
+        "output_tokens",
+        "cost_eur"
+      ],
+      "title": "UsageData",
+      "type": "object"
+    },
+    "UsageEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/UsageData"
+        },
+        "event": {
+          "const": "usage",
+          "default": "usage",
+          "title": "Event",
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ],
+      "title": "UsageEvent",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "discriminator": {
+    "mapping": {
+      "done": "#/$defs/DoneEvent",
+      "error": "#/$defs/ErrorEvent",
+      "guardrail": "#/$defs/GuardrailEvent",
+      "retrieval": "#/$defs/RetrievalEvent",
+      "router": "#/$defs/RouterEvent",
+      "text_delta": "#/$defs/TextDeltaEvent",
+      "tool_end": "#/$defs/ToolEndEvent",
+      "tool_start": "#/$defs/ToolStartEvent",
+      "trace": "#/$defs/TraceEvent",
+      "ui": "#/$defs/UIEvent",
+      "usage": "#/$defs/UsageEvent"
+    },
+    "propertyName": "event"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/TraceEvent"
+    },
+    {
+      "$ref": "#/$defs/RouterEvent"
+    },
+    {
+      "$ref": "#/$defs/ToolStartEvent"
+    },
+    {
+      "$ref": "#/$defs/ToolEndEvent"
+    },
+    {
+      "$ref": "#/$defs/RetrievalEvent"
+    },
+    {
+      "$ref": "#/$defs/TextDeltaEvent"
+    },
+    {
+      "$ref": "#/$defs/UIEvent"
+    },
+    {
+      "$ref": "#/$defs/GuardrailEvent"
+    },
+    {
+      "$ref": "#/$defs/UsageEvent"
+    },
+    {
+      "$ref": "#/$defs/DoneEvent"
+    },
+    {
+      "$ref": "#/$defs/ErrorEvent"
+    }
+  ]
+}

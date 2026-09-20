@@ -1,0 +1,39 @@
+[project]
+name = "invest-copilot-backend"
+version = "0.1.0"
+description = "Invest Copilot: agentic, retrieval-grounded investing assistant with deterministic finance tools (synthetic data)."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sse-starlette",
+    "pydantic>=2",
+    "pydantic-settings",
+    "anthropic>=1.0",
+    "qdrant-client[fastembed]",
+    "rank-bm25",
+    "reportlab",
+    "pypdf",
+    "numpy",
+    "mcp[cli]>=1.28,<2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "hypothesis",
+    "ruff",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

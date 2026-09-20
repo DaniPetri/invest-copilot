@@ -1,0 +1,14 @@
+{"event": "trace", "data": {"trace_id": "tr_fixture_advice", "started_at": "2026-09-20T09:19:12Z", "mode": "replay"}, "delay_ms": 0}
+{"event": "router", "data": {"intent": "advice_request", "flags": {"advice_request": true, "injection_suspected": false, "pii_present": false}, "confidence": 0.98, "model": "claude-haiku-4-5-20251001", "latency_ms": 351}, "delay_ms": 340}
+{"event": "text_delta", "data": {"text": "Eine persönliche Empfehlung darf "}, "delay_ms": 200}
+{"event": "text_delta", "data": {"text": "ich dir nicht geben. Ich kann "}, "delay_ms": 45}
+{"event": "text_delta", "data": {"text": "Produkte nach deinen Kriterien "}, "delay_ms": 45}
+{"event": "text_delta", "data": {"text": "filtern, Kosten und Risiken erklären "}, "delay_ms": 45}
+{"event": "text_delta", "data": {"text": "oder ein Sparplan-Szenario durchrechnen. "}, "delay_ms": 45}
+{"event": "text_delta", "data": {"text": "Für eine persönliche Empfehlung "}, "delay_ms": 45}
+{"event": "text_delta", "data": {"text": "sprichst du am besten mit einer "}, "delay_ms": 45}
+{"event": "text_delta", "data": {"text": "Beraterin oder einem Berater."}, "delay_ms": 45}
+{"event": "ui", "data": {"blocks": [{"type": "text", "markdown": "Eine persönliche Empfehlung darf ich dir nicht geben. Ich kann Produkte nach deinen Kriterien filtern, Kosten und Risiken erklären oder ein Sparplan-Szenario durchrechnen. Für eine persönliche Empfehlung sprichst du am besten mit einer Beraterin oder einem Berater.", "citations": []}, {"type": "handoff", "reason": "Persönliche Empfehlungen gibt nur eine Beraterin oder ein Berater.", "actions": [{"id": "filter_search", "label": "Nach Kriterien suchen"}, {"id": "simulate", "label": "Sparplan durchrechnen"}, {"id": "book_advisor", "label": "Mit einer Beraterin sprechen"}]}]}, "delay_ms": 120}
+{"event": "guardrail", "data": {"checks": [{"name": "pii", "status": "pass", "detail": "Keine IBAN, E-Mail oder Telefonnummer erkannt."}, {"name": "advice_language", "status": "pass", "detail": "Ablehnungsvorlage ohne Empfehlungssprache."}, {"name": "ai_label", "status": "pass", "detail": "KI-Kennzeichnung vorhanden."}]}, "delay_ms": 60}
+{"event": "usage", "data": {"model": "claude-haiku-4-5-20251001", "input_tokens": 350, "output_tokens": 70, "cost_eur": 0.0006}, "delay_ms": 5}
+{"event": "done", "data": {"trace_id": "tr_fixture_advice", "total_ms": 1180, "cost_eur": 0.0006}, "delay_ms": 10}

@@ -1,0 +1,291 @@
+{
+  "$defs": {
+    "Company": {
+      "additionalProperties": false,
+      "properties": {
+        "country": {
+          "title": "Country",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "market_cap_eur_m": {
+          "minimum": 0,
+          "title": "Market Cap Eur M",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sector": {
+          "title": "Sector",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sector",
+        "country",
+        "market_cap_eur_m"
+      ],
+      "title": "Company",
+      "type": "object"
+    },
+    "Holding": {
+      "additionalProperties": false,
+      "description": "One position inside a product. For bond and money-market funds these are synthetic issuers.",
+      "properties": {
+        "country": {
+          "title": "Country",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sector": {
+          "title": "Sector",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sector",
+        "country",
+        "weight"
+      ],
+      "title": "Holding",
+      "type": "object"
+    },
+    "MarketEvent": {
+      "additionalProperties": false,
+      "description": "Ground truth for attribution: a dated shock to the whole market or to single sectors.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "duration_days": {
+          "minimum": 1,
+          "title": "Duration Days",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sectors": {
+          "description": "Empty list = whole market",
+          "items": {
+            "type": "string"
+          },
+          "title": "Sectors",
+          "type": "array"
+        },
+        "shock_pct": {
+          "title": "Shock Pct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "name",
+        "description",
+        "sectors",
+        "shock_pct",
+        "duration_days"
+      ],
+      "title": "MarketEvent",
+      "type": "object"
+    },
+    "Product": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_class": {
+          "enum": [
+            "equity_etf",
+            "equity_fund",
+            "bond_fund",
+            "mixed_fund",
+            "money_market"
+          ],
+          "title": "Asset Class",
+          "type": "string"
+        },
+        "benchmark": {
+          "title": "Benchmark",
+          "type": "string"
+        },
+        "distribution": {
+          "enum": [
+            "thesaurierend",
+            "ausschüttend"
+          ],
+          "title": "Distribution",
+          "type": "string"
+        },
+        "entry_cost": {
+          "description": "Entry cost as a fraction",
+          "minimum": 0,
+          "title": "Entry Cost",
+          "type": "number"
+        },
+        "exclusions": {
+          "items": {
+            "enum": [
+              "Waffen",
+              "Fossile",
+              "Tabak",
+              "Glücksspiel"
+            ],
+            "type": "string"
+          },
+          "title": "Exclusions",
+          "type": "array"
+        },
+        "fund_size_eur_m": {
+          "minimum": 0,
+          "title": "Fund Size Eur M",
+          "type": "number"
+        },
+        "holdings": {
+          "items": {
+            "$ref": "#/$defs/Holding"
+          },
+          "title": "Holdings",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^P\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "inception": {
+          "format": "date",
+          "title": "Inception",
+          "type": "string"
+        },
+        "isin": {
+          "pattern": "^XD\\d{9}\\d$",
+          "title": "Isin",
+          "type": "string"
+        },
+        "issuer": {
+          "title": "Issuer",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "recommended_holding_years": {
+          "minimum": 1,
+          "title": "Recommended Holding Years",
+          "type": "integer"
+        },
+        "region": {
+          "enum": [
+            "Europa",
+            "USA",
+            "Welt",
+            "Schwellenländer",
+            "Österreich"
+          ],
+          "title": "Region",
+          "type": "string"
+        },
+        "replication": {
+          "enum": [
+            "physisch",
+            "synthetisch",
+            "aktiv"
+          ],
+          "title": "Replication",
+          "type": "string"
+        },
+        "savings_plan_min_eur": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Savings Plan Min Eur"
+        },
+        "sfdr": {
+          "enum": [
+            6,
+            8,
+            9
+          ],
+          "title": "Sfdr",
+          "type": "integer"
+        },
+        "sri": {
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Sri",
+          "type": "integer"
+        },
+        "ter": {
+          "description": "Ongoing costs as a fraction, 0.0015 = 0.15 % p. a.",
+          "minimum": 0,
+          "title": "Ter",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "isin",
+        "name",
+        "issuer",
+        "asset_class",
+        "region",
+        "sfdr",
+        "exclusions",
+        "ter",
+        "entry_cost",
+        "distribution",
+        "savings_plan_min_eur",
+        "replication",
+        "inception",
+        "fund_size_eur_m",
+        "benchmark",
+        "sri",
+        "recommended_holding_years",
+        "holdings"
+      ],
+      "title": "Product",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "defs"
+}

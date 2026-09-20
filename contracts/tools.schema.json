@@ -1,0 +1,1132 @@
+{
+  "$defs": {
+    "AttributionRow": {
+      "additionalProperties": false,
+      "properties": {
+        "contribution_pct": {
+          "description": "Share of total portfolio move, in percentage points",
+          "title": "Contribution Pct",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "pnl_eur": {
+          "title": "Pnl Eur",
+          "type": "number"
+        },
+        "pnl_pct": {
+          "title": "Pnl Pct",
+          "type": "number"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id",
+        "name",
+        "pnl_eur",
+        "pnl_pct",
+        "contribution_pct"
+      ],
+      "title": "AttributionRow",
+      "type": "object"
+    },
+    "Chunk": {
+      "additionalProperties": false,
+      "properties": {
+        "flags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "id": {
+          "description": "KID:{product_id}:p{page}:{section_slug}[:{n}]",
+          "title": "Id",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "score": {
+          "title": "Score",
+          "type": "number"
+        },
+        "section": {
+          "title": "Section",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "product_id",
+        "page",
+        "section",
+        "text",
+        "score"
+      ],
+      "title": "Chunk",
+      "type": "object"
+    },
+    "CostProjectionInput": {
+      "additionalProperties": false,
+      "properties": {
+        "monthly_eur": {
+          "exclusiveMinimum": 0,
+          "title": "Monthly Eur",
+          "type": "number"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "years": {
+          "maximum": 40,
+          "minimum": 1,
+          "title": "Years",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "product_id",
+        "monthly_eur",
+        "years"
+      ],
+      "title": "CostProjectionInput",
+      "type": "object"
+    },
+    "CostProjectionOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "by_year": {
+          "items": {
+            "$ref": "#/$defs/CostYear"
+          },
+          "title": "By Year",
+          "type": "array"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/CostRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "total_contributions_eur": {
+          "title": "Total Contributions Eur",
+          "type": "number"
+        },
+        "total_eur": {
+          "title": "Total Eur",
+          "type": "number"
+        },
+        "total_pct_of_contributions": {
+          "title": "Total Pct Of Contributions",
+          "type": "number"
+        }
+      },
+      "required": [
+        "product_id",
+        "total_contributions_eur",
+        "by_year",
+        "rows",
+        "total_eur",
+        "total_pct_of_contributions"
+      ],
+      "title": "CostProjectionOutput",
+      "type": "object"
+    },
+    "CostRow": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_eur": {
+          "minimum": 0,
+          "title": "Amount Eur",
+          "type": "number"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "amount_eur"
+      ],
+      "title": "CostRow",
+      "type": "object"
+    },
+    "CostYear": {
+      "additionalProperties": false,
+      "properties": {
+        "cumulative_eur": {
+          "minimum": 0,
+          "title": "Cumulative Eur",
+          "type": "number"
+        },
+        "entry_eur": {
+          "minimum": 0,
+          "title": "Entry Eur",
+          "type": "number"
+        },
+        "fees_eur": {
+          "minimum": 0,
+          "title": "Fees Eur",
+          "type": "number"
+        },
+        "ter_eur": {
+          "minimum": 0,
+          "title": "Ter Eur",
+          "type": "number"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "year",
+        "ter_eur",
+        "fees_eur",
+        "entry_eur",
+        "cumulative_eur"
+      ],
+      "title": "CostYear",
+      "type": "object"
+    },
+    "ExplainMoveInput": {
+      "additionalProperties": false,
+      "properties": {
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "start",
+        "end"
+      ],
+      "title": "ExplainMoveInput",
+      "type": "object"
+    },
+    "ExplainMoveOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "change_eur": {
+          "title": "Change Eur",
+          "type": "number"
+        },
+        "change_pct": {
+          "title": "Change Pct",
+          "type": "number"
+        },
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "end": {
+          "format": "date",
+          "title": "End",
+          "type": "string"
+        },
+        "end_value_eur": {
+          "title": "End Value Eur",
+          "type": "number"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/MarketEvent"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/AttributionRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "start": {
+          "format": "date",
+          "title": "Start",
+          "type": "string"
+        },
+        "start_value_eur": {
+          "title": "Start Value Eur",
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id",
+        "start",
+        "end",
+        "start_value_eur",
+        "end_value_eur",
+        "change_eur",
+        "change_pct",
+        "rows",
+        "events"
+      ],
+      "title": "ExplainMoveOutput",
+      "type": "object"
+    },
+    "ExposureRow": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "weight"
+      ],
+      "title": "ExposureRow",
+      "type": "object"
+    },
+    "LookthroughInput": {
+      "additionalProperties": false,
+      "properties": {
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id"
+      ],
+      "title": "LookthroughInput",
+      "type": "object"
+    },
+    "LookthroughOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "by_company": {
+          "items": {
+            "$ref": "#/$defs/ExposureRow"
+          },
+          "title": "By Company",
+          "type": "array"
+        },
+        "by_country": {
+          "items": {
+            "$ref": "#/$defs/ExposureRow"
+          },
+          "title": "By Country",
+          "type": "array"
+        },
+        "by_sector": {
+          "items": {
+            "$ref": "#/$defs/ExposureRow"
+          },
+          "title": "By Sector",
+          "type": "array"
+        },
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "flags": {
+          "description": "e.g. single_company_over_5pct, top10_over_30pct",
+          "items": {
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "hhi": {
+          "title": "Hhi",
+          "type": "number"
+        },
+        "n_companies": {
+          "title": "N Companies",
+          "type": "integer"
+        },
+        "n_products": {
+          "title": "N Products",
+          "type": "integer"
+        },
+        "overlaps": {
+          "items": {
+            "$ref": "#/$defs/OverlapPair"
+          },
+          "title": "Overlaps",
+          "type": "array"
+        },
+        "top10_share": {
+          "title": "Top10 Share",
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id",
+        "n_products",
+        "n_companies",
+        "by_company",
+        "by_sector",
+        "by_country",
+        "overlaps",
+        "hhi",
+        "top10_share",
+        "flags"
+      ],
+      "title": "LookthroughOutput",
+      "type": "object"
+    },
+    "MarketEvent": {
+      "additionalProperties": false,
+      "description": "Ground truth for attribution: a dated shock to the whole market or to single sectors.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "duration_days": {
+          "minimum": 1,
+          "title": "Duration Days",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sectors": {
+          "description": "Empty list = whole market",
+          "items": {
+            "type": "string"
+          },
+          "title": "Sectors",
+          "type": "array"
+        },
+        "shock_pct": {
+          "title": "Shock Pct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "name",
+        "description",
+        "sectors",
+        "shock_pct",
+        "duration_days"
+      ],
+      "title": "MarketEvent",
+      "type": "object"
+    },
+    "OverlapPair": {
+      "additionalProperties": false,
+      "properties": {
+        "overlap": {
+          "description": "Sum over companies of min(w_a, w_b)",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Overlap",
+          "type": "number"
+        },
+        "product_a": {
+          "title": "Product A",
+          "type": "string"
+        },
+        "product_b": {
+          "title": "Product B",
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_a",
+        "product_b",
+        "overlap"
+      ],
+      "title": "OverlapPair",
+      "type": "object"
+    },
+    "ProductWeight": {
+      "additionalProperties": false,
+      "properties": {
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "product_id",
+        "weight"
+      ],
+      "title": "ProductWeight",
+      "type": "object"
+    },
+    "ScreenFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_classes": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "equity_etf",
+                  "equity_fund",
+                  "bond_fund",
+                  "mixed_fund",
+                  "money_market"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset Classes"
+        },
+        "distribution": {
+          "anyOf": [
+            {
+              "enum": [
+                "thesaurierend",
+                "ausschüttend"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Distribution"
+        },
+        "exclusions": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "Waffen",
+                  "Fossile",
+                  "Tabak",
+                  "Glücksspiel"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusions"
+        },
+        "max_sri": {
+          "anyOf": [
+            {
+              "maximum": 7,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Sri"
+        },
+        "max_ter": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Ter"
+        },
+        "regions": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "Europa",
+                  "USA",
+                  "Welt",
+                  "Schwellenländer",
+                  "Österreich"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regions"
+        },
+        "savings_plan": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Savings Plan"
+        },
+        "sfdr_min": {
+          "anyOf": [
+            {
+              "enum": [
+                6,
+                8,
+                9
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sfdr Min"
+        }
+      },
+      "title": "ScreenFilter",
+      "type": "object"
+    },
+    "ScreenInput": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "$ref": "#/$defs/ScreenFilter"
+        },
+        "limit": {
+          "default": 10,
+          "maximum": 40,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "sort": {
+          "default": "ter",
+          "enum": [
+            "ter",
+            "sri",
+            "fund_size",
+            "name"
+          ],
+          "title": "Sort",
+          "type": "string"
+        }
+      },
+      "required": [
+        "filter"
+      ],
+      "title": "ScreenInput",
+      "type": "object"
+    },
+    "ScreenItem": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_class": {
+          "enum": [
+            "equity_etf",
+            "equity_fund",
+            "bond_fund",
+            "mixed_fund",
+            "money_market"
+          ],
+          "title": "Asset Class",
+          "type": "string"
+        },
+        "distribution": {
+          "enum": [
+            "thesaurierend",
+            "ausschüttend"
+          ],
+          "title": "Distribution",
+          "type": "string"
+        },
+        "isin": {
+          "title": "Isin",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "region": {
+          "enum": [
+            "Europa",
+            "USA",
+            "Welt",
+            "Schwellenländer",
+            "Österreich"
+          ],
+          "title": "Region",
+          "type": "string"
+        },
+        "savings_plan_min_eur": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Savings Plan Min Eur"
+        },
+        "sfdr": {
+          "enum": [
+            6,
+            8,
+            9
+          ],
+          "title": "Sfdr",
+          "type": "integer"
+        },
+        "sri": {
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Sri",
+          "type": "integer"
+        },
+        "ter": {
+          "title": "Ter",
+          "type": "number"
+        },
+        "why_matched": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Why Matched",
+          "type": "array"
+        }
+      },
+      "required": [
+        "product_id",
+        "name",
+        "isin",
+        "asset_class",
+        "region",
+        "sfdr",
+        "sri",
+        "ter",
+        "distribution",
+        "savings_plan_min_eur",
+        "why_matched"
+      ],
+      "title": "ScreenItem",
+      "type": "object"
+    },
+    "ScreenOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ScreenItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "total_matches": {
+          "title": "Total Matches",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total_matches",
+        "items"
+      ],
+      "title": "ScreenOutput",
+      "type": "object"
+    },
+    "SearchKidInput": {
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "default": 5,
+          "maximum": 20,
+          "minimum": 1,
+          "title": "K",
+          "type": "integer"
+        },
+        "product_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Product Ids"
+        },
+        "query": {
+          "title": "Query",
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "title": "SearchKidInput",
+      "type": "object"
+    },
+    "SearchKidOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "chunks": {
+          "items": {
+            "$ref": "#/$defs/Chunk"
+          },
+          "title": "Chunks",
+          "type": "array"
+        },
+        "quarantined_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Quarantined Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "chunks"
+      ],
+      "title": "SearchKidOutput",
+      "type": "object"
+    },
+    "SimulateInput": {
+      "additionalProperties": false,
+      "properties": {
+        "fee_per_execution": {
+          "default": 1.0,
+          "minimum": 0,
+          "title": "Fee Per Execution",
+          "type": "number"
+        },
+        "monthly_eur": {
+          "exclusiveMinimum": 0,
+          "title": "Monthly Eur",
+          "type": "number"
+        },
+        "product_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Equal weights",
+          "title": "Product Ids"
+        },
+        "weights": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ProductWeight"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Explicit weights, sum to 1",
+          "title": "Weights"
+        },
+        "years": {
+          "maximum": 40,
+          "minimum": 1,
+          "title": "Years",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "monthly_eur",
+        "years"
+      ],
+      "title": "SimulateInput",
+      "type": "object"
+    },
+    "SimulateOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "contributions": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Contributions",
+          "type": "array"
+        },
+        "kest_estimate": {
+          "description": "27.5 % on median gains, simplified",
+          "title": "Kest Estimate",
+          "type": "number"
+        },
+        "n_paths": {
+          "title": "N Paths",
+          "type": "integer"
+        },
+        "p25": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P25",
+          "type": "array"
+        },
+        "p5": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P5",
+          "type": "array"
+        },
+        "p50": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P50",
+          "type": "array"
+        },
+        "p75": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P75",
+          "type": "array"
+        },
+        "p95": {
+          "items": {
+            "type": "number"
+          },
+          "title": "P95",
+          "type": "array"
+        },
+        "prob_below_contributions": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Prob Below Contributions",
+          "type": "number"
+        },
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "total_contributions": {
+          "title": "Total Contributions",
+          "type": "number"
+        },
+        "total_costs": {
+          "title": "Total Costs",
+          "type": "number"
+        },
+        "years": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Years",
+          "type": "array"
+        }
+      },
+      "required": [
+        "years",
+        "p5",
+        "p25",
+        "p50",
+        "p75",
+        "p95",
+        "contributions",
+        "prob_below_contributions",
+        "total_contributions",
+        "total_costs",
+        "kest_estimate",
+        "n_paths",
+        "seed"
+      ],
+      "title": "SimulateOutput",
+      "type": "object"
+    },
+    "SuitabilityInput": {
+      "additionalProperties": false,
+      "properties": {
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "product_id"
+      ],
+      "title": "SuitabilityInput",
+      "type": "object"
+    },
+    "SuitabilityOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "reasons": {
+          "items": {
+            "$ref": "#/$defs/SuitabilityReason"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "verdict": {
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "product_id",
+        "verdict",
+        "reasons"
+      ],
+      "title": "SuitabilityOutput",
+      "type": "object"
+    },
+    "SuitabilityReason": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_field": {
+          "title": "Profile Field",
+          "type": "string"
+        },
+        "rule": {
+          "enum": [
+            "risk",
+            "knowledge",
+            "experience",
+            "horizon",
+            "sustainability"
+          ],
+          "title": "Rule",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "warn",
+            "fail"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "status",
+        "text",
+        "profile_field"
+      ],
+      "title": "SuitabilityReason",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "defs"
+}

@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "RouterFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "advice_request": {
+          "default": false,
+          "title": "Advice Request",
+          "type": "boolean"
+        },
+        "injection_suspected": {
+          "default": false,
+          "title": "Injection Suspected",
+          "type": "boolean"
+        },
+        "pii_present": {
+          "default": false,
+          "title": "Pii Present",
+          "type": "boolean"
+        }
+      },
+      "title": "RouterFlags",
+      "type": "object"
+    },
+    "RouterSlots": {
+      "additionalProperties": false,
+      "properties": {
+        "exclusions": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusions"
+        },
+        "monthly_eur": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Monthly Eur"
+        },
+        "product_ids": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Product Ids"
+        },
+        "regions": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regions"
+        },
+        "sfdr_min": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sfdr Min"
+        },
+        "topic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Topic"
+        },
+        "years": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Years"
+        }
+      },
+      "title": "RouterSlots",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "flags": {
+      "$ref": "#/$defs/RouterFlags"
+    },
+    "intent": {
+      "enum": [
+        "discover",
+        "product_question",
+        "portfolio_insight",
+        "simulate",
+        "learn",
+        "advice_request",
+        "out_of_scope"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "slots": {
+      "$ref": "#/$defs/RouterSlots"
+    }
+  },
+  "required": [
+    "intent",
+    "slots",
+    "flags",
+    "confidence"
+  ],
+  "title": "RouterDecision",
+  "type": "object"
+}

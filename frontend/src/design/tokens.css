@@ -1,0 +1,72 @@
+/* Design tokens from design/README.md. Everything AI is purple; deterministic results stay neutral. */
+:root {
+  --blue: #2463eb; /* brand, header band, primary buttons */
+  --blue-ink: #1a4fc4; /* links, active tab text */
+  --blue-soft: #e6eefe; /* active tab and quiet button background */
+  --navy: #0f1e3d; /* main text, dark buttons, code background */
+  --ink-2: #33415e; /* secondary text */
+  --muted: #5a6784; /* captions */
+  --ground: #edf0f5; /* app background */
+  --card: #ffffff;
+  --line: #d9dfea;
+  --ai: #5a3fd6; /* KI labels, chips, AI bubbles */
+  --ai-soft: #eeeafe;
+  --green: #0a7a3b;
+  --green-soft: #e3f5ea; /* gains, passed checks */
+  --red: #b42d23;
+  --red-soft: #fbe7e5; /* losses, failed checks */
+  --amber-ink: #8a5200;
+  --amber-soft: #fff3dc; /* warnings */
+
+  --radius-card: 20px;
+  --radius-button: 14px;
+  --radius-segmented: 12px;
+  --shadow-card: 0 1px 2px rgba(15, 30, 61, 0.06), 0 8px 24px rgba(15, 30, 61, 0.06);
+  --touch: 44px;
+}
+
+@theme inline {
+  --color-blue: var(--blue);
+  --color-blue-ink: var(--blue-ink);
+  --color-blue-soft: var(--blue-soft);
+  --color-navy: var(--navy);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-ground: var(--ground);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-red: var(--red);
+  --color-red-soft: var(--red-soft);
+  --color-amber-ink: var(--amber-ink);
+  --color-amber-soft: var(--amber-soft);
+  --font-sans: 'Onest', system-ui, sans-serif;
+  --radius-card: 20px;
+  --radius-button: 14px;
+  --shadow-card: 0 1px 2px rgba(15, 30, 61, 0.06), 0 8px 24px rgba(15, 30, 61, 0.06);
+}
+
+html {
+  font-family: 'Onest', system-ui, sans-serif;
+  color: var(--navy);
+  background: var(--ground);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
