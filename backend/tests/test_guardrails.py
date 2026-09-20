@@ -5,7 +5,7 @@ import pytest
 from app.agent.ui import RenderUIInput, render_ui_tool_definition
 from app.guardrails.advice import find_advice_language, looks_like_advice_request
 from app.guardrails.citations import cited_ids, strip_citations, unknown_citations
-from app.guardrails.integrity import find_malformed_text, missing_display_blocks
+from app.guardrails.integrity import decode_literal_unicode_escapes, find_malformed_text, missing_display_blocks
 from app.guardrails.numbers import build_sources, extract_numbers, parse_candidates, ungrounded_numbers
 from app.guardrails.pii import redact
 from app.schemas.events import RouterDecision
@@ -282,3 +282,70 @@ def test_missing_display_blocks_names_the_tool_and_the_needed_block():
     results.add("cost_projection", {}, "x", ok=False)  # a failed call has nothing to show
     problems = missing_display_blocks([TextBlock(markdown="Nur Text")], results)
     assert problems == ["suitability_check (r1) needs a suitability block"]
+
+
+# ── double-escaped characters (M8: seen live in a strict render_ui call) ────
+
+
+def test_double_escaped_characters_are_decoded():
+    # the exact text of the first demo question as Sonnet 5 wrote it
+    raw = r"Hier sind 5 Produkte: Sparplanf\u00e4hig, Region Europa, nachhaltig und ohne Waffen."
+    decoded, n = decode_literal_unicode_escapes(raw)
+    assert decoded == "Hier sind 5 Produkte: Sparplanfähig, Region Europa, nachhaltig und ohne Waffen."
+    assert n == 1
+    assert find_malformed_text(decoded) == []
+
+
+def test_decoding_walks_nested_values_and_counts_every_character():
+    value = {"blocks": [{"type": "text", "markdown": r"gr\u00f6\u00dften Anteile", "citations": []}], "n": 3}
+    decoded, n = decode_literal_unicode_escapes(value)
+    assert decoded == {"blocks": [{"type": "text", "markdown": "größten Anteile", "citations": []}], "n": 3}
+    assert n == 2
+    assert value["blocks"][0]["markdown"] == r"gr\u00f6\u00dften Anteile"  # the input is not modified
+
+
+def test_surrogate_pairs_join_into_one_character():
+    assert decode_literal_unicode_escapes(r"Kurs \ud83d\udcc8")[0] == "Kurs 📈"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        r"lone \ud83d surrogate",  # not text: stays literal, so text_integrity still fails it
+        r"kaputt \u12 zu kurz",
+        r"anderes Escape \n bleibt",
+        "Die größten Anteile liegen in Technologie: 59,7 %.",
+    ],
+)
+def test_what_is_not_a_clean_double_escape_is_left_alone(text):
+    assert decode_literal_unicode_escapes(text) == (text, 0)
+
+
+def test_a_decoded_control_character_is_still_malformed():
+    decoded, n = decode_literal_unicode_escapes(r"gr\u000c6\u000cten")  # the a14 defect, as escapes
+    assert n == 2
+    assert any("control characters" in p for p in find_malformed_text(decoded))
+
+
+# ── numbers written by the tool's own summary (M8: "5 von 40 Produkten passen") ─
+
+
+def _screen_results(ctx, **filter_):
+    from app.tools.registry import ResultStore, execute  # noqa: PLC0415
+
+    results = ResultStore()
+    r = execute("screen_products", {"filter": filter_, "sort": "ter", "limit": 10}, ctx, results)
+    return results, r
+
+
+def test_a_count_from_the_tool_summary_is_grounded_but_an_invented_one_is_not(ctx):
+    from app.guardrails.pipeline import check_output  # noqa: PLC0415
+    from app.schemas.ui import TextBlock  # noqa: PLC0415
+
+    results, r = _screen_results(ctx, savings_plan=True, regions=["Europa"], sfdr_min=8, exclusions=["Waffen"])
+    assert "von 40 Produkten" in r.summary
+    assert not build_sources([r.payload], "").is_grounded(40, 0)  # the payload alone does not know the 40
+    ok = check_output([TextBlock(markdown=f"{r.summary}, die zu deinen Kriterien passen.")], results, "x", "fail")
+    assert ok.violations == []
+    made_up = check_output([TextBlock(markdown="Hier sind 5 von 41 Produkten.")], results, "x", "fail")
+    assert any("41" in v for v in made_up.violations)

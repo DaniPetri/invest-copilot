@@ -516,6 +516,18 @@ async def test_garbled_text_triggers_a_repair_round_and_the_clean_draft_is_deliv
     assert one(events, "ui")["blocks"][0]["markdown"] == "Dein Depot: die größten Positionen sind unten."
 
 
+async def test_double_escaped_umlauts_are_decoded_without_a_repair_round_and_flagged_in_the_trace(ctx):
+    # M8: the model escaped its own escape in the strict render_ui JSON (a literal backslash-u sequence)
+    garbled = r"Sparplanf\u00e4hig und gr\u00f6\u00dfer im Vergleich."
+    llm = ScriptedLLM([router("learn"), text_turn(), render_turn([text_block(garbled)])])
+    events = await collect(Agent(llm, ctx, settings()), "Was ist ein ETF?")
+    assert len(llm.requests) == 3  # router, tool round, one render: no repair request
+    assert one(events, "ui")["blocks"][0]["markdown"] == "Sparplanfähig und größer im Vergleich."
+    integrity = checks(events)["text_integrity"]
+    assert integrity["status"] == "flag" and "3 Zeichen" in integrity["detail"]
+    assert "repair" not in checks(events) and "fallback" not in checks(events)
+
+
 async def test_text_that_stays_garbled_after_the_repair_round_becomes_the_safe_fallback(ctx):
     truncated = 'Hier ist der Eignungscheck f\x07auf deinem Kundenprofil f"} ]'  # a bell character and JSON debris
     llm = ScriptedLLM(

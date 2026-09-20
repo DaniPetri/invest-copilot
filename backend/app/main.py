@@ -11,6 +11,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from .agent.llm import LLMClient, make_llm_client
 from .agent.orchestrator import Agent
+from .api_data import router as data_router
 from .config import REPO_ROOT, get_settings
 from .data.store import DataMissingError, get_store
 from .rag.search import IndexMissingError
@@ -30,6 +31,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(data_router)
 
 
 @app.get("/api/health")

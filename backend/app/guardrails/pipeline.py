@@ -107,7 +107,9 @@ def check_output(
         checks.append(_check("citations", "pass", "Alle Quellenverweise stammen aus dieser Anfrage."))
 
     # numeric grounding: every number in model-written text comes from a tool result or the user's message
-    sources = build_sources([r.payload for r in results.all() if r.ok], user_message)
+    # The summary is written by the tool's own code ("5 von 40 Produkten passen") and shown to the model, so its numbers
+    # are tool output like the payload's: the 40 is not in the payload of screen_products.
+    sources = build_sources([x for r in results.all() if r.ok for x in (r.payload, r.summary)], user_message)
     ungrounded = ungrounded_numbers(text, sources)
     if ungrounded:
         status: Status = "fail" if numbers_mode == "fail" else "flag"

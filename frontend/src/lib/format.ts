@@ -57,3 +57,9 @@ export const monthName = (iso: string) => monthOnly.format(parseDay(iso)) // "Au
 export function cn(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(' ')
 }
+
+/** The `n` heaviest holdings, largest first. The API does not promise an order (bond and money-market funds list
+ *  their issuers unsorted), so never rely on it. Ties keep their listed order. */
+export function topHoldings<T extends { weight: number }>(holdings: readonly T[], n: number): T[] {
+  return [...holdings].sort((a, b) => b.weight - a.weight).slice(0, n)
+}

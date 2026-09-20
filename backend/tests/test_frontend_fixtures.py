@@ -106,11 +106,17 @@ def test_simulation_fixtures_carry_their_request_and_the_documented_mixes():
     assert entry["payload"]["years"][-1] == 20 and entry["payload"]["total_contributions"] == 12000.0
 
 
-def test_evals_fixture_validates_and_flags_what_is_not_measured():
+def test_evals_fixture_is_the_measured_report():
+    from pathlib import Path  # noqa: PLC0415
+
+    from app.evals_view import build_eval_report  # noqa: PLC0415
+
     report = EvalReport.model_validate(load("evals.json"))
-    assert report.mode == "fixture" and report.retrieval.sample is False
+    measured = build_eval_report(Path(__file__).resolve().parents[2] / "evals" / "reports")
+    assert report.mode == "fixture"
+    assert report.model_dump(exclude={"mode"}) == measured.model_dump(exclude={"mode"})
+    assert not any(s.sample for s in (report.retrieval, report.router, report.answers, report.redteam))
     hybrid = next(r for r in report.retrieval.rows if r.mode == "hybrid")
-    assert hybrid.recall_at_5 == 0.920 and hybrid.n_questions == 1080  # the measured M3 ablation
-    assert report.router.sample and report.answers.sample and report.redteam.sample
-    assert next(g for g in report.gates if g.name == "Retrieval").sample is False
-    assert all(g.passed for g in report.gates)
+    assert hybrid.recall_at_5 == pytest.approx(0.920, abs=1e-3) and hybrid.n_questions == 1080
+    # the documented red router gate stays visible
+    assert [g.metric for g in report.gates if not g.passed] == ["Beratungsanfragen erkannt"]

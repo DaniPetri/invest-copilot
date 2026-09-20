@@ -118,7 +118,7 @@ interface Session {
 const SessionContext = createContext<Session | null>(null)
 
 export function SessionProvider({ children, speed }: { children: ReactNode; speed?: number }) {
-  const { current } = usePersona()
+  const { currentId } = usePersona()
   const [state, dispatch] = useReducer(reducer, initialState)
   const abort = useRef<AbortController | null>(null)
   const [sheet, setSheet] = useReducer((_: boolean, v: boolean) => v, false)
@@ -138,7 +138,7 @@ export function SessionProvider({ children, speed }: { children: ReactNode; spee
       void (async () => {
         let seq = 0
         try {
-          for await (const event of api.chat(current?.id ?? 'markus', text, { signal: controller.signal, speed })) {
+          for await (const event of api.chat(currentId, text, { signal: controller.signal, speed })) {
             dispatch({ type: 'event', id, entry: { seq: seq++, t: Math.round(performance.now() - t0), event } })
           }
         } finally {
@@ -146,10 +146,21 @@ export function SessionProvider({ children, speed }: { children: ReactNode; spee
         }
       })()
     },
-    [current?.id, speed],
+    [currentId, speed],
   )
 
-  useEffect(() => () => abort.current?.abort(), [])
+  // Stop the stream when the provider really unmounts. StrictMode (dev) unmounts and remounts synchronously, and
+  // aborting on that first cleanup killed the request a `?q=` question had just started (the answer never came).
+  const mounted = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+      setTimeout(() => {
+        if (!mounted.current) abort.current?.abort()
+      }, 0)
+    }
+  }, [])
 
   const value = useMemo<Session>(
     () => ({

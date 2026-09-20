@@ -1,9 +1,10 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { eventWindow } from './lib/events'
 import { eur, signedEur, signedPct } from './lib/format'
+import { api } from './lib/api'
 import { renderApp } from './test/helpers'
 import type { PortfolioView, ToolResult } from './types/contracts'
 
@@ -136,6 +137,40 @@ describe('chat screen renders a full fixture stream', () => {
     expect(await screen.findByText('Kurz innehalten?', {}, SLOW)).toBeTruthy()
     expect(screen.getAllByTestId('exchange')).toHaveLength(1)
   })
+
+  it('answers a ?q= question under StrictMode too (dev mounts, unmounts and remounts; that must not abort the stream)', async () => {
+    renderApp('/chat?q=' + encodeURIComponent('Welche Aktie soll ich kaufen?'), { strict: true })
+    expect(await screen.findByText('Kurz innehalten?', {}, SLOW)).toBeTruthy()
+    expect(screen.getAllByTestId('exchange')).toHaveLength(1)
+    expect(screen.getByTestId('exchange').textContent).not.toContain('Antwort abgebrochen')
+  })
+})
+
+describe('chat is asked as the selected persona', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    localStorage.clear()
+  })
+
+  // Loading the customer list takes a moment; a ?q= question sent on page load used to fall back to Markus.
+  it.each(['anna', 'elif', 'markus'])('a ?q= question on page load is sent as %s', async (persona) => {
+    localStorage.setItem('invest-copilot.persona', persona)
+    const chat = vi.spyOn(api, 'chat').mockImplementation(async function* () {})
+    renderApp('/chat?q=' + encodeURIComponent('Was kostet der Welt ETF?'))
+    await waitFor(() => expect(chat).toHaveBeenCalledTimes(1))
+    expect(chat.mock.calls[0][0]).toBe(persona)
+  })
+
+  it('a question typed after switching persona is sent as the new persona', async () => {
+    localStorage.setItem('invest-copilot.persona', 'markus')
+    const chat = vi.spyOn(api, 'chat').mockImplementation(async function* () {})
+    renderApp('/')
+    fireEvent.click(await screen.findByRole('radio', { name: 'Anna' }))
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Hauptnavigation' })).getByRole('link', { name: 'Chat' }))
+    await ask('Was kostet der Welt ETF?')
+    await waitFor(() => expect(chat).toHaveBeenCalled())
+    expect(chat.mock.calls.at(-1)![0]).toBe('anna')
+  })
 })
 
 describe('screens', () => {
@@ -228,13 +263,15 @@ describe('screens', () => {
     expect(screen.getByTestId('simulator-words').textContent).toContain('Das ist keine Prognose')
   })
 
-  it('Evals: gates, the retrieval table and the honest "Beispielwerte" marking', async () => {
+  it('Evals: measured gates (the red one included), the retrieval table and the judge calibration', async () => {
     renderApp('/evals')
     expect(await screen.findByText('Freigabe-Schwellen', {}, SLOW)).toBeTruthy()
-    expect(screen.getByTestId('sample-banner').textContent).toContain('Nur die Retrieval-Zahlen sind gemessen')
+    expect(screen.queryByTestId('sample-banner')).toBeNull()
     const gates = screen.getByTestId('gates')
-    expect(within(gates).getAllByText('Beispielwert').length).toBe(3)
-    expect(within(gates).getAllByText('gemessen')).toHaveLength(1)
+    expect(within(gates).queryByText('Beispielwert')).toBeNull()
+    expect(within(gates).getAllByText('bestanden').length).toBe(6)
+    const failed = within(gates).getByText('nicht bestanden')
+    expect(failed.closest('li')!.textContent).toContain('Beratungsanfragen erkannt: 93,3 % (Schwelle 95 %)')
     const row = screen.getByText('Hybrid (RRF)').closest('tr')!
     expect(row.textContent).toContain('0,920')
     expect(screen.getByText('Hybrid + Reranker').closest('tr')!.textContent).toContain('Stichprobe, 270 Fragen')

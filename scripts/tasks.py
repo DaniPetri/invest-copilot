@@ -78,6 +78,20 @@ def eval_ci() -> int:
     return run(["uv", "run", "--project", "backend", "python", "-m", "evals.run", "--suite", "ci", "--mode", "replay"])
 
 
+def record() -> int:
+    """SPEC §12: record the LLM responses of the 8 demo questions and of the eval sets as cassettes (needs a key).
+
+    Recording is idempotent, so requests that already have a cassette cost nothing. The eval suites run live and
+    cache-through: exit 1 there means a gate failed (documented, see PROGRESS.md), only other codes are errors."""
+    if code := run(["uv", "run", "--project", "backend", "python", "scripts/record_demo.py"]):
+        return code
+    code = run(
+        ["uv", "run", "--project", "backend", "python", "-m", "evals.run", "--suite", "all", "--mode", "live",
+         "--max-cost-eur", "1.0"]
+    )
+    return 0 if code in (0, 1) else code
+
+
 def dev() -> int:
     """API on :8000 and web on :5173 together; Ctrl-C stops both."""
     procs = [
@@ -102,14 +116,6 @@ def dev() -> int:
     return 0
 
 
-def not_yet(name: str, milestone: str) -> Callable[[], int]:
-    def _run() -> int:
-        print(f"'{name}' is not implemented yet (arrives in {milestone}).", file=sys.stderr)
-        return 2
-
-    return _run
-
-
 TARGETS: dict[str, Callable[[], int]] = {
     "setup": setup,
     "data": data,
@@ -120,7 +126,7 @@ TARGETS: dict[str, Callable[[], int]] = {
     "eval-ci": eval_ci,
     "contracts": contracts,
     "fixtures": fixtures,
-    "record": not_yet("record", "M8"),
+    "record": record,
 }
 
 

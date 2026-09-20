@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { render } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { MemoryRouter } from 'react-router'
 import App from '../App'
 import type { FixtureLine, UIBlock } from '../types/contracts'
@@ -25,11 +26,13 @@ export function blocksOf(stream: string): UIBlock[] {
   return ui && ui.event === 'ui' ? ui.data.blocks : []
 }
 
-/** The whole app (all providers and routes) at `path`, in fixture mode with no artificial delays. */
-export function renderApp(path = '/') {
-  return render(
+/** The whole app (all providers and routes) at `path`, in fixture mode with no artificial delays.
+ *  `strict` wraps it in StrictMode like main.tsx does, which mounts, unmounts and mounts every component in dev. */
+export function renderApp(path = '/', { strict = false }: { strict?: boolean } = {}) {
+  const app = (
     <MemoryRouter initialEntries={[path]}>
       <App speed={0} />
-    </MemoryRouter>,
+    </MemoryRouter>
   )
+  return render(strict ? <StrictMode>{app}</StrictMode> : app)
 }

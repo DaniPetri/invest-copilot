@@ -19,7 +19,7 @@ from app.config import get_settings  # noqa: E402
 from app.data.store import Store  # noqa: E402
 from app.fmt import de_num, de_pct  # noqa: E402
 from app.portfolio_view import build_portfolio_view, event_window  # noqa: E402
-from app.schemas.evals import EvalReport  # noqa: E402
+from app.evals_view import build_eval_report  # noqa: E402
 from app.schemas.products import MarketEvent  # noqa: E402
 from app.schemas.ui import UIBlockAdapter  # noqa: E402
 from app.tools.base import ToolContext  # noqa: E402
@@ -103,102 +103,12 @@ def build_tools(ctx: ToolContext, portfolios: dict) -> dict:
 
 
 def build_evals() -> dict:
-    """Retrieval numbers are the measured M3 ablation (evals/retrieval_quick.py); the other suites are illustrative
-    until M7 runs them and are flagged `sample`."""
-    ret = [
-        ("bm25", 0.560, 0.804, 0.659, 0.681, 0.3, 1080),
-        ("dense", 0.559, 0.808, 0.664, 0.692, 8.6, 1080),
-        ("hybrid", 0.601, 0.920, 0.727, 0.769, 9.7, 1080),
-        ("hybrid_rerank", 0.844, 0.989, 0.912, 0.930, 1227.2, 270),
-    ]
-    js = lambda m, lo, hi: {"mean": m, "ci_low": lo, "ci_high": hi}  # noqa: E731
-    report = {
-        "generated_at": "2026-09-20T12:00:00Z",
-        "mode": "fixture",
-        "gates": [
-            {
-                "name": "Retrieval",
-                "metric": "hybrid recall@5",
-                "value": 0.920,
-                "threshold": 0.85,
-                "passed": True,
-                "sample": False,
-            },
-            {
-                "name": "Router",
-                "metric": "advice request recall",
-                "value": 0.97,
-                "threshold": 0.95,
-                "passed": True,
-                "sample": True,
-            },
-            {
-                "name": "Antworten",
-                "metric": "faithfulness (Mittel)",
-                "value": 4.3,
-                "threshold": 4.0,
-                "passed": True,
-                "sample": True,
-            },
-            {
-                "name": "Red Team",
-                "metric": "erfolgreiche Angriffe",
-                "value": 0,
-                "threshold": 0,
-                "passed": True,
-                "sample": True,
-            },
-        ],
-        "retrieval": {
-            "sample": False,
-            "rows": [
-                {
-                    "mode": m,
-                    "recall_at_1": a,
-                    "recall_at_5": b,
-                    "mrr_at_10": c,
-                    "ndcg_at_5": d,
-                    "p50_ms": e,
-                    "n_questions": n,
-                }
-                for m, a, b, c, d, e, n in ret
-            ],
-        },
-        "router": {
-            "sample": True,
-            "n_dev": 60,
-            "n_blind": 20,
-            "accuracy_dev": 0.93,
-            "accuracy_blind": 0.85,
-            "macro_f1": 0.88,
-            "advice_recall": 0.97,
-            "false_alarm_rate": 0.03,
-        },
-        "answers": {
-            "sample": True,
-            "n": 30,
-            "citation_validity": 0.97,
-            "numeric_grounding": 0.94,
-            "advice_language_absent": 1.0,
-            "faithfulness": js(4.3, 4.1, 4.5),
-            "completeness": js(4.0, 3.8, 4.2),
-            "clarity": js(4.5, 4.3, 4.7),
-            "boundary": js(4.7, 4.5, 4.9),
-        },
-        "redteam": {
-            "sample": True,
-            "rows": [
-                {"category": "Direkte Injection", "attacks": 4, "successes": 0},
-                {"category": "Injection über KID (P13, P31)", "attacks": 4, "successes": 0},
-                {"category": "Abfluss persönlicher Daten", "attacks": 4, "successes": 0},
-                {"category": "Beratung erzwingen", "attacks": 4, "successes": 0},
-                {"category": "Gefälschte Autorität", "attacks": 4, "successes": 0},
-            ],
-        },
-        "judge_calibration": {"sample": True, "n": 12, "kappa": None},
-    }
-    EvalReport.model_validate(report)
+    """The measured eval report (evals/reports), through the same adapter as GET /api/evals/latest. Only `mode`
+    differs, so fixture mode shows the real numbers and says it is a copy."""
+    report = build_eval_report(REPO / "evals" / "reports").model_dump(mode="json")
+    report["mode"] = "fixture"
     return report
+
 
 
 # ── SSE fixtures built from real tool output ────────────────────────────────

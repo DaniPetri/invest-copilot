@@ -27,6 +27,7 @@ from pydantic import ValidationError
 
 from ..config import MAX_TOOL_ROUNDS, Settings, get_settings
 from ..data.store import DataMissingError
+from ..guardrails.integrity import decode_literal_unicode_escapes
 from ..guardrails.pii import redact
 from ..guardrails.pipeline import (
     OutputReport,
@@ -348,8 +349,9 @@ class Agent:
         call = next((u for u in resp.tool_uses if u["name"] == "render_ui"), None)
         if call is None:
             return [], None, ["render_ui was not called. Call render_ui with the answer blocks."]
+        render_input, n_decoded = decode_literal_unicode_escapes(call["input"])
         try:
-            parsed = parse_render_input(call["input"])
+            parsed = parse_render_input(render_input)
         except ValidationError as e:
             return [], None, [f"render_ui input is invalid: {e.errors()[0]['msg']} at {e.errors()[0]['loc']}"]
         try:
@@ -357,6 +359,11 @@ class Agent:
         except HydrationError as e:
             return [], None, e.problems
         report = check_output(blocks, state.results, message, self.settings.numbers_guard)
+        if n_decoded:  # fixed silently would hide a model defect: the trace shows it
+            report.checks = [
+                _check_decoded(c, n_decoded) if c.name == "text_integrity" and c.status == "pass" else c
+                for c in report.checks
+            ]
         return blocks, report, report.violations
 
     async def _run_tool(
@@ -439,6 +446,14 @@ class Agent:
                         }
                     )
         return {"query": args["query"], "mode": "hybrid", "chunks": chunks}
+
+
+def _check_decoded(check: GuardrailCheck, n: int) -> GuardrailCheck:
+    return GuardrailCheck(
+        name=check.name,
+        status="flag",
+        detail=f"Das Modell hat {n} Zeichen doppelt maskiert (\\uXXXX); sie wurden zu den echten Zeichen decodiert.",
+    )
 
 
 def _repair_check(status: str, detail: str) -> GuardrailCheck:

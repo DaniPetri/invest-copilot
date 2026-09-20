@@ -23,7 +23,7 @@ curl -N "localhost:8000/api/_debug/sse/discover?fast=true"
 ```
 
 **Known gaps / decisions**
-- Fixture product IDs, names and numbers are placeholders. They are made consistent with the generated universe in M8, when the frontend moves to the real API.
+- Fixture product IDs, names and numbers were placeholders in M1. Since M2/M5 they are built from the real universe (`make fixtures`); the evals fixture is the measured report since M8.
 - `product_cards` has two optional fields beyond SPEC §9 (`filters`, `total_matches`), needed for the "Das habe ich verstanden" chips in design/02. `attribution` carries `change_eur` and `change_pct`, `cost_breakdown` carries `total_pct_of_contributions` (design/03, design/04). Additive, defaults where optional.
 - The model-facing `render_ui` schema (blocks with `result_id` references) is built in M6 (`agent/ui.py`), not here.
 - Contract exporter lives at `backend/app/schemas/export.py` (run as `python -m app.schemas.export`), not `scripts/export_contracts.py` as PLAN.md said.
@@ -71,7 +71,7 @@ Hash for seed 20260920 (this machine, numpy 2.x): `32f83b87...72e82` (changed on
 - "Kosten im Zeitverlauf" uses a simple formula (entry + (TER + transaction cost) x years), not a full RIY calculation.
 - The market and sector factors are demeaned so realised drift is a constant (`MARKET_DRIFT`), not seed luck. SRI 6 exists only because small technology "growth" names have high beta and idiosyncratic volatility (`GROWTH_TECH_CAP_EUR_M`); P32 sits at 31.0 % vs the 30 % line.
 - Real-looking sovereign names are avoided; bond issuers are fictional states. Company names are invented stems and could still coincide with real firms by chance (the README disclaimer covers it).
-- Fixture numbers in `depot_august.jsonl` (P&L, percentages) are still placeholders; `explain_move` (M4) produces the real ones, and the fixtures are refreshed in M8.
+- Fixture numbers in `depot_august.jsonl` carry the real `explain_move` numbers (see "Data change: August 2026").
 - The ruff config allows long lines in `app/data/generate.py` only (one table row per line for products and events).
 
 ## M3 · Retrieval — done
@@ -168,7 +168,7 @@ uv run python -m app.mcp_server        # stdio MCP server (needs data/generated 
 - **Blocks** (`src/blocks/`, one component per type, `registry.tsx` skips unknown types): text, product_cards, risk_meter, fan_chart, exposure_bars, overlap_matrix, attribution, cost_breakdown, suitability, handoff, citations. Recharts for fan chart, attribution and exposure bars. AI surfaces are purple with the KI label and "BIB P07 · S. 2" chips; deterministic results are neutral cards.
 - **Screens**: `/` (value, 3-month curve, positions, ask input), `/chat` (streaming text, blocks, source chips, history newest first), `/depot` (value chart with event markers, tapping one calls `explain_move` and shows the attribution, "Erklären lassen" hands the question to the chat, Depot-Röntgen with overlap matrix and Länder/Branchen/Top-Titel), `/produkt/:id` (KID summary, SRI scale, cost calculator as a direct tool call, suitability for the current persona), `/simulator` (rate, duration, mix; every change is a direct simulation call), `/evals`.
 - **Trace panel**: numbered steps built live from the events (router decision, tool calls with arguments, retrieval hits with scores and quarantine flags, answer, guardrail checks, tokens and cost), timing bars, Ablauf/JSON tabs, "Replay-Modus" badge.
-- **Contracts, changed together** (CLAUDE.md rule): new `PortfolioView`, `PortfolioPosition`, `EventMarker`, `SeriesPoint` (`schemas/portfolio.py`) and `EvalReport` (`schemas/evals.py`), exported to `contracts/`, mirrored in `contracts.ts`, and used by the fixtures. `app/portfolio_view.py` builds the view from the real tools (it becomes `GET /api/customers/{id}/portfolio` in M8).
+- **Contracts, changed together** (CLAUDE.md rule): new `PortfolioView`, `PortfolioPosition`, `EventMarker`, `SeriesPoint` (`schemas/portfolio.py`) and `EvalReport` (`schemas/evals.py`), exported to `contracts/`, mirrored in `contracts.ts`, and used by the fixtures. `app/portfolio_view.py` builds the view from the real tools (it became `GET /api/customers/{id}/portfolio` in M8).
 - **Fixtures** (`scripts/build_frontend_fixtures.py`, `make fixtures`, no hand-typed numbers): `fixtures/api/{customers,products,portfolios,tools,evals}.json` (tools.json is 417 KB: 48 simulations, 160 cost projections, 120 suitability checks, 9 event explanations, 3 look-throughs) and two new SSE streams (`simulate`, `roentgen`) next to the three from M1. Together the five streams contain all 11 block types.
 - Design fidelity: the app was run in fixture mode and screenshotted with headless Chrome at 390x844 and 1440x900 (DevTools protocol, exact viewport) and compared with design 01, 02, 03, 04, 06 and 11: blue band with the first card overlapping it by 40 px, Onest, 20 px cards, purple for everything AI. Two polish rounds came out of that (wrapping labels, a duplicated cost heading, a missing "heute" tick).
 
@@ -176,7 +176,7 @@ uv run python -m app.mcp_server        # stdio MCP server (needs data/generated 
 ```
 uv run python scripts/tasks.py test            # backend 291 passed, frontend 145 passed
 cd frontend && npm run build
-cd frontend && npm run dev                     # fixture mode is the default in dev (frontend/.env.development: VITE_USE_FIXTURES=1)
+cd frontend && npm run dev:fixtures              # fixture mode (M8 changed the default: `npm run dev` now uses the real API)
 ```
 Open http://localhost:5173, click "Beispiel abspielen", and watch the trace panel fill on the right (at >= 1100 px wide). Rebuild fixtures after `make data && make ingest` with `make fixtures`.
 
@@ -284,3 +284,38 @@ cat evals/reports/latest.md
 - `pytest` must be started from `backend/` (or with `-c backend/pyproject.toml`) so `pythonpath` is set; `make test` does that.
 
 **Next step**: M8, integration. Optional first: understand the repair-attempt garbling (above), since it is only latent. Then point the frontend at the real API, record the 8 demo questions as cassettes (a17 is question one and is now clean), and run `spec-reviewer` on M5, M6 and M8. The router advice-recall gate stays red as documented (known, contained downstream, not a demo blocker). Run `/clear` after this commit.
+
+## M8 · Integration — done
+
+**Done**
+- **Frontend on the real API by default.** `frontend/.env.development` is `VITE_USE_FIXTURES=0`; `npm run dev:fixtures` (`.env.fixtures`) keeps the offline mode. Every screen was driven in headless Chrome against the running backend (Übersicht, Chat, Depot, Produkt, Simulator, Evals): no console errors, every `/api/*` call 200.
+- **New endpoints** (`backend/app/api_data.py`, tests in `test_api_data.py`): `GET /api/customers`, `/api/customers/{id}/portfolio`, `/api/products`, `/api/products/{id}`, `/api/kid/{id}.pdf` (inline, only for real product IDs), `/api/evals/latest`. `evals_view.py` maps the runner's reports to the `EvalReport` contract: each suite comes from the newest complete report that contains it (so an `eval-ci` run does not hide the answers suite), nothing is invented, and the red router gate shows as failed.
+- **8 demo questions** in `scripts/demo_questions.yaml` with per-question expectations; `make record` (`scripts/record_demo.py`, then the eval suites cache-through, capped at 1 EUR); `scripts/smoke_demo.py` (stdlib SSE client against a running API); `backend/tests/test_demo_questions.py` runs the same checks in the test suite from the committed cassettes.
+- **Replay verified with no key**: `ANTHROPIC_API_KEY= make dev` reports `llm_mode=replay, has_api_key=false`; smoke test 8/8; every trace `mode=replay`. With a key in `.env` and `LLM_MODE=replay`, a question without a cassette fails with `cassette_miss` and a "run make record" hint; it never falls back to live (seen on the 3 new questions before recording).
+- 10 cassettes recorded live for the 3 new questions (d1, d2, a1), 1 orphan removed (a repair round that is no longer needed), so 9 new files; the other 5 demo questions reuse M7 cassettes. Live cost of recording about 0.11 EUR. The eval step of `make record` was the M7 cache-through and cost nothing new.
+- spec-reviewer (M5, M6, M8): no blockers; its two should-fix items (stale PROGRESS.md lines) and the optional test gap (`test_demo_questions.py`) are fixed.
+
+**Bugs found only by running against the real API** (all fixed; each has a test that was seen failing first, except 5)
+1. **d1 fell back to the safe answer when first recorded.** Cause chain: `screen_products` says "5 von 40 Produkten passen"; 40 is not in its payload, so the `fail`-mode numbers guard rejected a correct first draft; the repair attempt then double-escaped umlauts and failed `text_integrity` twice. This is the M7 "garbled repair" defect, now understood: the trigger is a guard false positive, the garbling happens in the repair. Fixes: numbers are also grounded against each result's tool-written `summary` (an invented count is still rejected; tested), and double-escaped `\uXXXX` sequences in the model's `render_ui` input are decoded before hydration and shown as a `flag` on `text_integrity` (control characters and lone surrogates still fail). The model's tendency to garble a repair is contained, not fixed.
+2. **`?q=` questions were never answered under React StrictMode** (dev): the session provider aborted the request on the simulated unmount. It now aborts one tick later, only if not remounted.
+3. **A `?q=` question on page load was asked as Markus** whatever persona was selected (`current?.id ?? 'markus'` before the customer list loaded). The session now uses `currentId` (from storage). Anna's or Elif's question would have been answered about Markus's portfolio.
+4. **Product page showed the wrong "largest holdings"**: the API does not sort holdings (11 products unsorted) while the fixtures were sorted. `topHoldings` sorts.
+5. Duplicate React key on `/evals` (several gates share a name); found from a console error, fixed without a dedicated test.
+
+**How to verify**
+```
+uv run python scripts/tasks.py test                       # backend 516 passed, frontend 152 passed
+ANTHROPIC_API_KEY= uv run python scripts/tasks.py dev     # then, in a second shell:
+uv run --project backend python scripts/smoke_demo.py     # 8/8, llm_mode=replay, has_api_key=False
+uv run python scripts/tasks.py eval                       # replay; results identical to M7; exit 1 = the known router gate
+```
+
+**Known gaps / decisions**
+- The router advice-recall gate is still red on purpose (0.933, r74; see M7). `make eval` and `make eval-ci` exit 1.
+- `/api/evals/latest` needs a report with every suite (`make eval`). If `latest.json` comes from `make eval-ci` on a clean clone and no older full report exists, the endpoint answers 404 "Run `make eval`". The committed `latest.json` is a full run.
+- Demo answers are what the model recorded: q1 and i1 call `screen_products` before `search_kid` (an extra, harmless tool call); the i1 answer summarises the P31 KID and the trace shows the quarantined chunk `KID:P31:p2:sonstige_informationen`; the M6 wording gap ("KID has no such section") is not fixed.
+- Costs shown in replayed answers are the cost of the original recording, not new spend.
+- Windows dev servers: stopping `make dev` abruptly can leave an orphaned uvicorn reload worker holding :8000, which then answers `Internal Server Error`; kill the listening process before restarting.
+- Not done: design 07/08 screens, an in-app PDF viewer, README, CI, Docker (M9).
+
+**Next step**: M9, ship: Docker, devcontainer, CI (`make data` before `make ingest`, then tests), README with screenshots and the eval table, tag v0.1.0. Run `/clear` after this commit.

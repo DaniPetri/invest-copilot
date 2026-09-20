@@ -1,38 +1,62 @@
 {
- "generated_at": "2026-09-20T12:00:00Z",
+ "generated_at": "2026-09-20T21:39:12+00:00",
  "mode": "fixture",
  "gates": [
   {
    "name": "Retrieval",
    "metric": "hybrid recall@5",
-   "value": 0.92,
+   "value": 0.9203703703703704,
    "threshold": 0.85,
    "passed": true,
    "sample": false
   },
   {
    "name": "Router",
-   "metric": "advice request recall",
-   "value": 0.97,
+   "metric": "Beratungsanfragen erkannt",
+   "value": 0.9333333333333333,
    "threshold": 0.95,
-   "passed": true,
-   "sample": true
+   "passed": false,
+   "sample": false
   },
   {
    "name": "Antworten",
    "metric": "faithfulness (Mittel)",
-   "value": 4.3,
+   "value": 4.9,
    "threshold": 4.0,
    "passed": true,
-   "sample": true
+   "sample": false
+  },
+  {
+   "name": "Antworten",
+   "metric": "Zahlen belegt",
+   "value": 1.0,
+   "threshold": 1.0,
+   "passed": true,
+   "sample": false
+  },
+  {
+   "name": "Antworten",
+   "metric": "Zitate gültig",
+   "value": 1.0,
+   "threshold": 1.0,
+   "passed": true,
+   "sample": false
+  },
+  {
+   "name": "Antworten",
+   "metric": "ohne Beratungssprache",
+   "value": 1.0,
+   "threshold": 1.0,
+   "passed": true,
+   "sample": false
   },
   {
    "name": "Red Team",
    "metric": "erfolgreiche Angriffe",
-   "value": 0,
-   "threshold": 0,
+   "value": 0.0,
+   "threshold": 0.0,
    "passed": true,
-   "sample": true
+   "sample": false
   }
  ],
  "retrieval": {
@@ -40,81 +64,81 @@
   "rows": [
    {
     "mode": "bm25",
-    "recall_at_1": 0.56,
-    "recall_at_5": 0.804,
-    "mrr_at_10": 0.659,
-    "ndcg_at_5": 0.681,
-    "p50_ms": 0.3,
+    "recall_at_1": 0.5601851851851852,
+    "recall_at_5": 0.8037037037037037,
+    "mrr_at_10": 0.6586118459729571,
+    "ndcg_at_5": 0.6811799380134642,
+    "p50_ms": 0.2499000111129135,
     "n_questions": 1080
    },
    {
     "mode": "dense",
-    "recall_at_1": 0.559,
-    "recall_at_5": 0.808,
-    "mrr_at_10": 0.664,
-    "ndcg_at_5": 0.692,
-    "p50_ms": 8.6,
+    "recall_at_1": 0.5592592592592592,
+    "recall_at_5": 0.8083333333333333,
+    "mrr_at_10": 0.6640097736625514,
+    "ndcg_at_5": 0.69209390948826,
+    "p50_ms": 6.808499980252236,
     "n_questions": 1080
    },
    {
     "mode": "hybrid",
-    "recall_at_1": 0.601,
-    "recall_at_5": 0.92,
-    "mrr_at_10": 0.727,
-    "ndcg_at_5": 0.769,
-    "p50_ms": 9.7,
+    "recall_at_1": 0.600925925925926,
+    "recall_at_5": 0.9203703703703704,
+    "mrr_at_10": 0.7272780717225161,
+    "ndcg_at_5": 0.7689418407305784,
+    "p50_ms": 7.56649998947978,
     "n_questions": 1080
    },
    {
     "mode": "hybrid_rerank",
-    "recall_at_1": 0.844,
-    "recall_at_5": 0.989,
-    "mrr_at_10": 0.912,
-    "ndcg_at_5": 0.93,
-    "p50_ms": 1227.2,
+    "recall_at_1": 0.8444444444444444,
+    "recall_at_5": 0.9888888888888889,
+    "mrr_at_10": 0.9116358024691359,
+    "ndcg_at_5": 0.9304727385616506,
+    "p50_ms": 1231.0778999817558,
     "n_questions": 270
    }
   ]
  },
  "router": {
-  "sample": true,
+  "sample": false,
   "n_dev": 60,
   "n_blind": 20,
-  "accuracy_dev": 0.93,
-  "accuracy_blind": 0.85,
-  "macro_f1": 0.88,
-  "advice_recall": 0.97,
-  "false_alarm_rate": 0.03
+  "accuracy_dev": 0.9666666666666667,
+  "accuracy_blind": 1.0,
+  "macro_f1": 0.9734229901784495,
+  "advice_recall": 0.9333333333333333,
+  "false_alarm_rate": 0.0
  },
  "answers": {
-  "sample": true,
+  "sample": false,
   "n": 30,
-  "citation_validity": 0.97,
-  "numeric_grounding": 0.94,
+  "citation_validity": 1.0,
+  "numeric_grounding": 1.0,
   "advice_language_absent": 1.0,
   "faithfulness": {
-   "mean": 4.3,
-   "ci_low": 4.1,
-   "ci_high": 4.5
+   "mean": 4.9,
+   "ci_low": 4.766666666666667,
+   "ci_high": 5.0
   },
   "completeness": {
-   "mean": 4.0,
-   "ci_low": 3.8,
-   "ci_high": 4.2
+   "mean": 4.133333333333334,
+   "ci_low": 3.933333333333333,
+   "ci_high": 4.366666666666666
   },
   "clarity": {
-   "mean": 4.5,
-   "ci_low": 4.3,
-   "ci_high": 4.7
+   "mean": 4.333333333333333,
+   "ci_low": 4.166666666666667,
+   "ci_high": 4.5
   },
   "boundary": {
-   "mean": 4.7,
-   "ci_low": 4.5,
-   "ci_high": 4.9
+   "mean": 5.0,
+   "ci_low": 5.0,
+   "ci_high": 5.0
   }
  },
  "redteam": {
-  "sample": true,
+  "sample": false,
   "rows": [
    {
     "category": "Direkte Injection",
@@ -144,7 +168,7 @@
   ]
  },
  "judge_calibration": {
-  "sample": true,
+  "sample": false,
   "n": 12,
   "kappa": null
  }

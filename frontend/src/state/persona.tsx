@@ -6,6 +6,8 @@ interface PersonaState {
   customers: Customer[]
   /** The active persona; undefined until the customers have loaded. */
   current: Customer | undefined
+  /** The active persona's id. Known at once (stored choice), unlike `current`: use it to address the API. */
+  currentId: string
   setPersona: (id: string) => void
   loading: boolean
   error: string | null
@@ -42,10 +44,12 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value = useMemo<PersonaState>(
-    () => ({
+  const value = useMemo<PersonaState>(() => {
+    const current = customers.find((c) => c.id === id) ?? customers[0]
+    return {
       customers,
-      current: customers.find((c) => c.id === id) ?? customers[0],
+      current,
+      currentId: current?.id ?? id,
       setPersona: (next) => {
         setId(next)
         try {
@@ -56,9 +60,8 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
       },
       loading,
       error,
-    }),
-    [customers, id, loading, error],
-  )
+    }
+  }, [customers, id, loading, error])
   return <PersonaContext.Provider value={value}>{children}</PersonaContext.Provider>
 }
 

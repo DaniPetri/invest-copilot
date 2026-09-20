@@ -5,7 +5,7 @@ import { readStream } from '../test/helpers'
 import type { Customer, FixtureLine, PortfolioView, Product, ToolResult } from '../types/contracts'
 import { parseChunkId } from './api'
 import { eventWindow } from './events'
-import { dayLong, dayShort, eur, num, pct, signedEur, signedPct } from './format'
+import { dayLong, dayShort, eur, num, pct, signedEur, signedPct, topHoldings } from './format'
 import { loadApi, pickChatFixture, replay, toolFixture, toolKey } from './fixtures'
 import { MIX_IDS, MIXES, RATES, YEARS } from './mixes'
 
@@ -36,6 +36,25 @@ describe('German formatting', () => {
     expect(dayShort('2026-08-12')).toBe('12. Aug.')
     expect(dayLong('2026-08-12')).toBe('12. August 2026')
     expect(dayShort('2026-01-01')).toBe('1. Jan.')
+  })
+})
+
+describe('topHoldings', () => {
+  const rows = [
+    { id: 'a', weight: 0.1 },
+    { id: 'b', weight: 0.4 },
+    { id: 'c', weight: 0.25 },
+    { id: 'd', weight: 0.25 },
+  ]
+
+  it('returns the heaviest first, whatever order the API listed them in', () => {
+    expect(topHoldings(rows, 3).map((h) => h.id)).toEqual(['b', 'c', 'd'])
+  })
+
+  it('does not reorder the input', () => {
+    const copy = rows.map((r) => r.id)
+    topHoldings(rows, 2)
+    expect(rows.map((r) => r.id)).toEqual(copy)
   })
 })
 

@@ -82,7 +82,7 @@ function Report({ r }: { r: EvalReport }) {
         <h2 className="text-[17px] font-bold text-navy">Freigabe-Schwellen</h2>
         <ul className="divide-y divide-line" data-testid="gates">
           {r.gates.map((g) => (
-            <li key={g.name} className="flex items-center gap-3 py-2.5">
+            <li key={`${g.name}-${g.metric}`} className="flex items-center gap-3 py-2.5">
               <StatusIcon status={g.passed ? 'pass' : 'fail'} />
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] font-semibold text-navy">

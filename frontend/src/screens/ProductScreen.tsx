@@ -7,7 +7,7 @@ import { SuitabilityBlockView } from '../blocks/SuitabilityBlock'
 import { SRI_WORDS, SriScale } from '../components/SriScale'
 import { Card, ChoiceButtons, Disclaimer, ErrorNote, Skeleton, SourceBadge } from '../components/ui'
 import { api } from '../lib/api'
-import { eur, pct } from '../lib/format'
+import { eur, pct, topHoldings } from '../lib/format'
 import { RATES } from '../lib/mixes'
 import { useLoad } from '../lib/useLoad'
 import { usePersona } from '../state/persona'
@@ -143,7 +143,7 @@ export function ProductScreen() {
               <Card className="space-y-1">
                 <h2 className="text-[17px] font-bold text-navy">Größte Positionen</h2>
                 <ul className="divide-y divide-line">
-                  {p.holdings.slice(0, 5).map((h) => (
+                  {topHoldings(p.holdings, 5).map((h) => (
                     <li key={h.id} className="flex items-baseline justify-between gap-3 py-2 text-[15px]">
                       <span className="text-navy">{h.name}</span>
                       <span className="font-semibold text-navy">{pct(h.weight, 1)}</span>
