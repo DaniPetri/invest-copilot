@@ -338,6 +338,6 @@ ANTHROPIC_API_KEY= uv run python scripts/tasks.py dev   # then open :5173 and as
 Manual browser click-through (headless Chrome over CDP, real clicks and typing, `ANTHROPIC_API_KEY` blank, `llm_mode=replay`): all 8 demo questions answered through persona switch, Chat, typing and send; every answer had the KI label, the footer, the Replay-Modus badge and its blocks; 0 console errors, 0 failed requests; i1 shows the quarantined P31 chunk and none of the injection text.
 
 **Known gaps**
-- Docker is written but was never built on the development machine (no Docker installed); the `docker` CI job is its first real run.
+- Docker was never built on the development machine (no Docker installed). It is verified by the `docker` CI job instead: compose up in replay mode with no key, then the 8 demo questions through the nginx proxy, 8/8 passed (run 35542334089).
 - Cosmetic, seen in the click-through and not fixed: in the attribution chart the label "Welt ETF" touches its value "-155 €" (p1); at 390 px the fan chart's x-axis labels are clipped ("ute", "in 20 J") (s1).
 - The router gate, the missing judge calibration (no kappa) and the other limitations are in README "Known limitations".
