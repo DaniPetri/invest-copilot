@@ -558,6 +558,11 @@ SECTOR_SIGMA = {
 }  # fmt: skip
 SECTOR_SIGMA_DEFAULT = 0.0035
 MARKET_SIGMA = 0.0085
+# Scenario constraint: the demo story is "why did my depot fall in August 2026?" (SPEC demo, design/04), so the
+# market factor's total over that month is pinned to a decline instead of whatever the random path gave. The
+# opposite adjustment is spread over all other days, which keeps the long-run drift unchanged.
+PIN_WINDOW = (np.datetime64("2026-08-01"), np.datetime64("2026-08-31"))
+PIN_MARKET_TOTAL = -0.03  # sum of daily market-factor returns inside the window
 MARKET_DRIFT = 0.00045  # daily, about 11 % a year before volatility drag and events
 GROWTH_TECH_CAP_EUR_M = 40_000  # small technology companies are the high-volatility growth names
 BETA_RANGE = {
@@ -601,6 +606,14 @@ def _t(rng: np.random.Generator, size) -> np.ndarray:
     return x - x.mean()
 
 
+def pin_market_window(market: np.ndarray, dates: np.ndarray, window: tuple, total: float) -> None:
+    """In place: make the market factor sum to `total` inside `window`, compensating outside it."""
+    inside = (dates >= window[0]) & (dates <= window[1])
+    delta = total - market[inside].sum()
+    market[inside] += delta / inside.sum()
+    market[~inside] -= delta / (~inside).sum()
+
+
 def simulate_assets(
     rng: np.random.Generator,
     dates: np.ndarray,
@@ -620,6 +633,8 @@ def simulate_assets(
                 sector_f[s][window] += per_day
         else:
             market[window] += per_day
+
+    pin_market_window(market, dates, PIN_WINDOW, PIN_MARKET_TOTAL)
 
     ids: list[str] = []
     rows: list[np.ndarray] = []

@@ -4,11 +4,14 @@ import numpy as np
 import pytest
 
 from app.data.generate import (
+    PIN_MARKET_TOTAL,
+    PIN_WINDOW,
     SEED,
     annual_vol,
     generate,
     isin_check_digit,
     isin_is_valid,
+    pin_market_window,
     sri_from_vol,
 )
 from app.data.store import DataMissingError, Store
@@ -294,3 +297,32 @@ def test_manifest_lists_all_outputs(built):
     for name in ("companies.json", "products.json", "events.json", "customers.json", "prices_assets.csv",
                  "prices_products.csv", "kid_facts.jsonl", "retrieval.jsonl", "injections.json"):  # fmt: skip
         assert name in manifest["files"] and (out / name).exists()
+
+
+# ── the August 2026 scenario constraint ─────────────────────────────────────
+
+
+def test_pin_market_window_sets_the_total_and_keeps_the_long_run_drift():
+    dates = np.arange(np.datetime64("2026-01-01"), np.datetime64("2026-12-31"), dtype="datetime64[D]")
+    market = np.random.default_rng(3).normal(0.0004, 0.01, len(dates))
+    before = market.sum()
+    window = (np.datetime64("2026-08-01"), np.datetime64("2026-08-31"))
+    pin_market_window(market, dates, window, -0.03)
+    inside = (dates >= window[0]) & (dates <= window[1])
+    assert market[inside].sum() == pytest.approx(-0.03)
+    assert market.sum() == pytest.approx(before)
+
+
+def test_august_2026_is_a_decline_for_the_market_and_for_markus(store):
+    """The demo question is 'Warum ist mein Depot im August gefallen?', so the data has to make it true."""
+    assert PIN_WINDOW[0] == np.datetime64("2026-08-01") and PIN_MARKET_TOTAL < 0
+    prices = store.prices
+    i0, i1 = prices.index_on_or_before("2026-07-31"), prices.index_on_or_before("2026-08-31")
+    companies = np.mean([prices.assets[c.id][i1] / prices.assets[c.id][i0] - 1 for c in store.companies])
+    assert companies < -0.01
+    for pid in ("P03", "P22", "P11"):  # Markus's three products all fell over the month
+        nav = prices.products[pid]
+        assert nav[i1] < nav[i0], pid
+    j0, j1 = prices.index_on_or_before("2026-08-11"), prices.index_on_or_before("2026-08-13")
+    tech, world = prices.products["P22"], prices.products["P03"]
+    assert tech[j1] / tech[j0] - 1 < world[j1] / world[j0] - 1 < 0  # the chip shock hits tech hardest

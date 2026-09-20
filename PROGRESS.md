@@ -50,7 +50,7 @@ curl -N "localhost:8000/api/_debug/sse/discover?fast=true"
 uv run python scripts/tasks.py data     # ~2 s, prints the product table and the content hash
 uv run python scripts/tasks.py test     # backend 94 passed, frontend 23 passed
 ```
-Hash for seed 20260920 (this machine, numpy 2.x): `5796abb5...b1175`. `test_same_seed_gives_identical_output_hash` regenerates everything, PDFs included, and compares every file.
+Hash for seed 20260920 (this machine, numpy 2.x): `32f83b87...72e82` (changed once after M4, see "Data change: August 2026" below; it was `5796abb5...` before). `test_same_seed_gives_identical_output_hash` regenerates everything, PDFs included, and compares every file.
 
 **Universe facts M3–M6 rely on**
 - Product IDs: P01–P24 ETFs, P25–P32 active equity, P33–P36 bond, P37–P38 mixed, P39–P40 money market. P03 `Welt ETF` (savings plan from 25 EUR), P22 `Welt Tech ETF` (SRI 5, the SRI-5 ETF for Elif), P32 (SRI 6), P13 and P31 carry the injections.
@@ -135,12 +135,12 @@ uv run python -m app.mcp_server        # stdio MCP server (needs data/generated 
 ```
 
 **Worked examples** (data/generated, seed 20260920)
-- Markus look-through: 3 products, 60 positions, top company 5.1 %, top-10 44.5 %, Technologie 59.9 %, US 33.8 %; flags `single_company_over_5pct` and `top10_over_30pct`; overlaps P03/P22 46.6 %, P03/P11 38.9 %, P11/P22 16.2 %.
-- 50 EUR/month, 20 years, P03: paid in 12,000 EUR; p5 / p50 / p95 = 13,716 / 28,899 / 66,513 EUR; explicit costs 240 EUR; 2.4 % of paths end below the payments; KESt estimate 4,647.28 EUR.
+- Markus look-through: 3 products, 60 positions, top company 5.1 %, top-10 44.4 %, Technologie 59.7 %, US 33.7 %; flags `single_company_over_5pct` and `top10_over_30pct`; overlaps P03/P22 46.6 %, P03/P11 38.9 %, P11/P22 16.2 %.
+- 50 EUR/month, 20 years, P03: paid in 12,000 EUR; p5 / p50 / p95 = 14,182 / 28,897 / 67,063 EUR; explicit costs 240 EUR; 2.2 % of paths end below the payments; KESt estimate 4,646.61 EUR.
 - Elif vs P22 (SRI 5 ETF): `fail`, because of risk (class 2 of 5 fits up to SRI 3); knowledge, experience, horizon and sustainability pass.
 - Cost check against design/03: 50 EUR/month, 10 years, P07: 165.38 EUR = 2.8 % of 6,000 EUR (design shows 165 EUR, 2.8 %).
 
-**Open decision (data, from M2): August 2026 goes up, not down.** The simulated market rose about 9 % in August 2026 (every equity product +8 to +12 %); the E12 chip shock is there (P22 -4.8 % on Aug 11-13) but the month ends higher. `explain_move` for Markus, Aug 1-31, therefore returns +1,079.66 EUR (+9.97 %) with E12 as the only matched event, and worst-to-best P22 +461.71 / P03 +403.55 / P11 +214.40. The tool is right; the demo question "Warum ist mein Depot im August gefallen?" (SPEC demo, fixture `depot_august`, design/04) then has a false premise. Options: (1) adjust the simulated market path so August 2026 is a decline (changes the generated data, the hash, the KID scenario numbers and the retrieval ablation, so re-run M2/M3 checks); (2) rephrase the demo question ("Wie hat sich mein Depot im August entwickelt?"). Recommended: (1), before M6.
+**Finding, resolved right after M4 (see "Data change: August 2026" below):** the simulated market had risen about 9 % in August 2026, so "Warum ist mein Depot im August gefallen?" had a false premise. Fixed with option 1, an explicit scenario constraint in the generator.
 
 **Known gaps / decisions**
 - Strict schemas are not yet validated by a live API call (planned spike at the start of M6, with the structured-output parameters).
@@ -151,4 +151,11 @@ uv run python -m app.mcp_server        # stdio MCP server (needs data/generated 
 - MCP tools take a single `params` argument (FastMCP wraps a model parameter that way).
 - The docs list no cap on optional parameters for strict tools; making every field required-and-nullable was a precaution.
 
-**Next step**: M5, frontend in fixture mode. Before M6, decide the August 2026 data question above.
+## Data change: August 2026 is a decline (scenario constraint) — done
+
+**Why**: the demo story (SPEC demo, `depot_august` fixture, design/04) is "Warum ist mein Depot im August gefallen?", but with the plain random path the market rose about 9 % that month.
+**What**: `backend/app/data/generate.py` pins the market factor's total over 2026-08-01..2026-08-31 to -3.0 % (`PIN_WINDOW`, `PIN_MARKET_TOTAL`, `pin_market_window`) and spreads the opposite adjustment over all other days, so the long-run drift is unchanged. Nothing else in the generator changed; the E12 chip shock (-6 % over two days, Technologie) is still injected as before.
+**Result** (Markus, Aug 1-31): -316.98 EUR (-2.76 %), matched event E12; P03 -154.67, P22 -120.88, P11 -41.43 EUR (all three fall). Over the event window Aug 11-13 the depot is -3.52 %, with P22 the biggest drag (design/04 shows -3.4 % on 12 Aug). Equal-weight companies -2.1 % in August. SRI spread (1 to 6), volatilities and realised returns (equities 7-10 % p. a.) are unchanged.
+**Re-verified**: M2 tests (event visibility, determinism, hash), M3 tests and the ablation (identical: hybrid recall@5 0.920, recall@1 0.601; only numbers inside KID tables moved, so retrieval ranks the same), M4 tests; 270 backend and 23 frontend tests green. New tests: `pin_market_window` (sets the total, keeps the drift), August 2026 is a decline for the market and for Markus's three products, and `explain_move` for Markus in August shows a loss with all rows negative.
+**Fixture**: `depot_august.jsonl` now carries the real `explain_move` numbers and summary instead of placeholders (the `discover` fixture already used real IDs from M2; its numbers come from `screen_products`).
+**Note**: regenerate and re-index after pulling this change: `make data && make ingest`.

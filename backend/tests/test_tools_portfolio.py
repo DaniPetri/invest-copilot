@@ -142,6 +142,8 @@ def _move(ctx, cid, start, end):
 def test_attribution_finds_the_ground_truth_event_for_markus_in_august_2026(ctx):
     out = _move(ctx, "markus", date(2026, 8, 1), date(2026, 8, 31))
     assert [e.id for e in out.events] == ["E12"]
+    assert out.change_eur < 0 and -6 < out.change_pct < -1  # the month is a decline, as the demo question says
+    assert all(r.pnl_eur < 0 for r in out.rows)
     ev = out.events[0]
     assert (str(ev.date), ev.sectors, ev.shock_pct) == ("2026-08-12", ["Technologie"], -6.0)
     assert ev.name == "Chipsektor: schwache Quartalszahlen"
