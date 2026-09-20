@@ -51,6 +51,10 @@ def sources():
         "2,00 %",  # from a KID text in the payload
         "seit 2021",  # a year
         "Kapitalertragsteuer 27,5 %",  # the KESt rate is a known constant
+        "am 12.08. haben Chipwerte nachgegeben",  # day.month of 2026-08-12 in the payload (the a17 false positive)
+        "am 12.08.2026 und am 12. August 2026",
+        "die Top-10-Positionen machen 46,6 % aus",  # top10_over_30pct names the ranking size (the a14 false positive)
+        "Top 10 und top10",
     ],
 )
 def test_grounded_numbers_are_accepted(text, sources):
@@ -66,6 +70,11 @@ def test_grounded_numbers_are_accepted(text, sources):
         ("28.900 €", ["28.900"]),  # rounded to hundreds is not the tool's number
         ("7 Produkte", ["7"]),  # the count is 3, and 7 is only allowed as the scale end ("von 7")
         ("1.234,56 €", ["1.234,56"]),
+        ("am 13.08. fiel der Markt", ["13.08."]),  # a date that is in no tool result is still reported
+        ("am 13. August 2026", ["13. August 2026"]),  # right month, wrong day
+        ("1.234.567 Anteile", ["1.234.567"]),  # thousands separators are not misread as a date
+        ("die Top-7-Positionen", ["7"]),  # the payload only names a top-10 metric
+        ("Wert 45.67. hier", ["45.67"]),  # not a calendar date, so read as the number it is
     ],
 )
 def test_ungrounded_numbers_are_reported(text, expected, sources):

@@ -6,6 +6,9 @@ Matching is tolerant in the ways a German answer needs:
   * fractions vs percent: a tool value 0.0015 is grounded when the text says `0,15 %` (value x 100)
   * rounding: the text may show fewer decimals than the tool value (`28.897` for 28897.3) but never different digits
   * signs: `-316,98 €` and `316,98 €` both match the tool value -316.98
+  * dates: `12.08.`, `12.08.2026` and `12. August` are read as day and month (and year) and are grounded when every part
+    appears in a source (a tool result with `2026-08-12` grounds all three); a wrong date is still reported
+  * rankings: `Top-10` is grounded by a top-10 metric in the payload (`top10_over_30pct`); `Top-7` would be reported
 Not compared: numbers glued to letters (`P22`, `XD6355122915`, `KID:P07:p2`) and citation markers.
 """
 
@@ -28,6 +31,26 @@ _FLAG_THRESHOLD = re.compile(r"_(\d+)pct")
 SCALE_RE = re.compile(r"\b\d\s*(?:von|bis|[-–])\s*7\b")
 YEAR_RANGE = range(1900, 2101)
 _DATE_TOKEN = re.compile(r"\d{4}-\d{2}-\d{2}")
+_MONTHS = [
+    "januar",
+    "februar",
+    "märz",
+    "april",
+    "mai",
+    "juni",
+    "juli",
+    "august",
+    "september",
+    "oktober",
+    "november",
+    "dezember",
+]
+_MONTH_ALIASES = {"jänner": 1, "maerz": 3}
+_DATE_NUMERIC = re.compile(r"(?<![\w.,])(\d{1,2})\.\s?(\d{1,2})\.(?:\s?(\d{4}))?(?![\w])")  # 12.08. | 12.08.2026
+_DATE_NAMED = re.compile(
+    r"(?<![\w.,])(\d{1,2})\.\s?(" + "|".join([*_MONTHS, *_MONTH_ALIASES]) + r")\b(?:\s+(\d{4}))?", re.IGNORECASE
+)  # 12. August | 12. August 2026
+_TOP_N = re.compile(r"top[\s_-]?(\d+)", re.IGNORECASE)  # Top-10, top10_over_30pct: the size of a ranking
 
 
 def parse_candidates(token: str) -> list[tuple[float, int]]:
@@ -49,9 +72,31 @@ def parse_candidates(token: str) -> list[tuple[float, int]]:
     return out
 
 
+def _month_number(name: str) -> int:
+    n = name.lower()
+    return _MONTH_ALIASES[n] if n in _MONTH_ALIASES else _MONTHS.index(n) + 1
+
+
+def split_dates(text: str) -> tuple[str, list[tuple[str, list[int]]]]:
+    """(text without its dates, [(date as written, [day, month, year?])]). Only real calendar dates count: `45.67.`
+    and `1.234.567` are left alone as numbers."""
+    dates: list[tuple[str, list[int]]] = []
+
+    def take(m: re.Match, month: int) -> str:
+        day, year = int(m.group(1)), m.group(3)
+        if not (1 <= day <= 31 and 1 <= month <= 12):
+            return m.group(0)
+        dates.append((m.group(0).strip(), [day, month, *([int(year)] if year else [])]))
+        return " "
+
+    text = _DATE_NUMERIC.sub(lambda m: take(m, int(m.group(2))), text)
+    text = _DATE_NAMED.sub(lambda m: take(m, _month_number(m.group(2))), text)
+    return text, dates
+
+
 def extract_numbers(text: str) -> list[tuple[str, list[tuple[float, int]]]]:
-    """(token, readings) for every number in `text`, after removing citation markers and scale mentions."""
-    text = SCALE_RE.sub(" ", strip_citations(text))
+    """(token, readings) for every number in `text` outside dates, after removing citation markers and scales."""
+    text, _ = split_dates(SCALE_RE.sub(" ", strip_citations(text)))
     return [(m.group(1), parse_candidates(m.group(1))) for m in NUMBER_RE.finditer(text)]
 
 
@@ -73,10 +118,15 @@ class NumberSources:
         for m in _DATE_TOKEN.finditer(text):
             for part in m.group(0).split("-"):
                 self.add_number(int(part))
+        for _, parts in split_dates(text)[1]:
+            for part in parts:
+                self.add_number(part)
         for _, readings in extract_numbers(text):
             for value, _ in readings:
                 self.add_number(value)
         for m in _FLAG_THRESHOLD.finditer(text):
+            self.add_number(int(m.group(1)))
+        for m in _TOP_N.finditer(text):
             self.add_number(int(m.group(1)))
 
     def add_payload(self, node: Any) -> None:
@@ -88,7 +138,9 @@ class NumberSources:
         elif isinstance(node, str):
             self.add_text(node)
         elif isinstance(node, dict):
-            for v in node.values():
+            for key, v in node.items():
+                for m in _TOP_N.finditer(str(key)):  # a field called top10_share names the ranking size 10
+                    self.add_number(int(m.group(1)))
                 self.add_payload(v)
         elif isinstance(node, list | tuple):
             self.add_number(len(node))
@@ -118,6 +170,10 @@ def build_sources(payloads: Iterable[Any], user_message: str) -> NumberSources:
 def ungrounded_numbers(text: str, sources: NumberSources) -> list[str]:
     """Number tokens of `text` that no reading of matches a source. Empty = every number is grounded."""
     bad = []
+    _, dates = split_dates(SCALE_RE.sub(" ", strip_citations(text)))
+    for token, parts in dates:  # a date is grounded when its day, month and year each are
+        if not all(sources.is_grounded(part, 0) for part in parts):
+            bad.append(token)
     for token, readings in extract_numbers(text):
         if not any(sources.is_grounded(v, d) for v, d in readings):
             bad.append(token)

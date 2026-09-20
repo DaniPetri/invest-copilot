@@ -44,3 +44,13 @@ by the request hash, so a changed rubric, prompt, question or answer never reuse
   so the recorded outcome is the fallback. Faithfulness 4.73 -> 4.70, completeness 4.00 -> 3.83, clarity 4.13 -> 4.20:
   the movement is the three fallbacks replacing three broken answers, not a change in the other 27.
 
+## 2026-09-20 · numbers guard reads dates and Top-N
+
+- The three fallbacks above were caused by false positives of the numbers guard on `12.08.` (a date) and `Top-10`
+  (a ranking size), not by the answers themselves. The guard now grounds dates by their parts and `Top-N` by a top-N
+  metric in the payload; a wrong date or a ranking size the payload does not name is still reported.
+- a14, a17 and a27 were re-run fresh (`--refresh`, 0.17 EUR) and re-recorded; a13 and a16, whose first drafts are now
+  accepted without a repair, got new judge verdicts (0.03 EUR). Result on the 30 answers: 0 repairs, 0 fallbacks,
+  faithfulness 4.90, completeness 4.13, clarity 4.33, boundary 5.00. The rise over 4.70 is the three fallbacks and two
+  repaired drafts being replaced by normal answers, not a change of rubric.
+
