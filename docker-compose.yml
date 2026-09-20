@@ -1,0 +1,36 @@
+# docker compose up --build   ->   http://localhost:5173
+# Replay mode by default (recorded LLM responses, no key). For live mode put ANTHROPIC_API_KEY and LLM_MODE=live in .env.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MODEL_CACHE_DIR: /models
+    volumes:
+      - generated:/app/data      # universe, search index, traces: built on first start
+      - models:/models           # embedding model cache
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+
+volumes:
+  generated:
+  models:

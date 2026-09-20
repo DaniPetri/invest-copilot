@@ -111,3 +111,19 @@ def test_evals_endpoint_returns_the_contract(client):
     res = client.get("/api/evals/latest")
     assert res.status_code == 200
     EvalReport.model_validate(res.json())
+
+
+def test_clean_clone_after_eval_ci_still_serves_the_bundled_report(tmp_path):
+    """`make eval-ci` overwrites latest.json with a run that has no answers suite; bundled.json covers it."""
+    full = json.loads((REPO_ROOT / "evals" / "reports" / "latest.json").read_text(encoding="utf-8"))
+    (tmp_path / "bundled.json").write_text(json.dumps(full), encoding="utf-8")
+    ci_only = {**full, "suites": {k: v for k, v in full["suites"].items() if k in ("retrieval", "router", "redteam")}}
+    (tmp_path / "latest.json").write_text(json.dumps(ci_only), encoding="utf-8")
+    report = build_eval_report(tmp_path)
+    assert report.answers.n == 30
+    assert report.retrieval.rows[0].mode == "bm25"
+
+
+def test_the_committed_bundled_report_is_a_full_run():
+    bundled = json.loads((REPO_ROOT / "evals" / "reports" / "bundled.json").read_text(encoding="utf-8"))
+    assert {"retrieval", "router", "redteam", "answers"} <= set(bundled["suites"])

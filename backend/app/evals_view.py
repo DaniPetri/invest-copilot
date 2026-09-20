@@ -40,11 +40,18 @@ class NoEvalReportError(RuntimeError):
 
 
 def _reports(reports_dir: Path) -> list[dict[str, Any]]:
-    """Newest first: timestamped runs (file names sort by time), then latest.json as a last resort."""
+    """Newest first: latest.json, timestamped runs (file names sort by time), then the committed full run.
+
+    `bundled.json` is a snapshot of a full `make eval` run kept in git. `make eval-ci` overwrites latest.json with
+    a run that has no answers suite, so on a clean clone this snapshot is what keeps /evals complete.
+    """
     files = sorted((f for f in reports_dir.glob("2*.json")), reverse=True)
     latest = reports_dir / "latest.json"
     if latest.is_file():
         files.insert(0, latest)
+    bundled = reports_dir / "bundled.json"
+    if bundled.is_file():
+        files.append(bundled)
     out = []
     for f in files:
         try:

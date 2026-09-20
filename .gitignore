@@ -4,6 +4,7 @@
 data/generated/
 evals/reports/*.json
 !evals/reports/latest.json
+!evals/reports/bundled.json
 !evals/reports/rerank_sample.json
 # private references (never commit third-party screenshots)
 design/private/
