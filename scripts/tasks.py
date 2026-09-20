@@ -92,10 +92,17 @@ def record() -> int:
     return 0 if code in (0, 1) else code
 
 
+def api_dev_command() -> list[str]:
+    """uvicorn with auto-reload, run from backend/. `--reload-dir app` limits the watcher to the source: by default
+    it watches all of backend/, .venv included, and installed packages (.pyc writes, first imports) then restart
+    the server in a loop at startup."""
+    return ["uv", "run", "uvicorn", "app.main:app", "--reload", "--reload-dir", "app", "--port", "8000"]
+
+
 def dev() -> int:
     """API on :8000 and web on :5173 together; Ctrl-C stops both."""
     procs = [
-        subprocess.Popen(["uv", "run", "uvicorn", "app.main:app", "--reload", "--port", "8000"], cwd=BACKEND),
+        subprocess.Popen(api_dev_command(), cwd=BACKEND),
         subprocess.Popen(npm("run", "dev"), cwd=FRONTEND),
     ]
     print("API http://localhost:8000/api/health · Web http://localhost:5173", flush=True)

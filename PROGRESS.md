@@ -341,3 +341,11 @@ Manual browser click-through (headless Chrome over CDP, real clicks and typing, 
 - Docker was never built on the development machine (no Docker installed). It is verified by the `docker` CI job instead: compose up in replay mode with no key, then the 8 demo questions through the nginx proxy, 8/8 passed (run 35542334089).
 - Cosmetic, seen in the click-through and not fixed: in the attribution chart the label "Welt ETF" touches its value "-155 €" (p1); at 390 px the fan chart's x-axis labels are clipped ("ute", "in 20 J") (s1).
 - The router gate, the missing judge calibration (no kappa) and the other limitations are in README "Known limitations".
+
+## v0.1.1 · Fix: `make dev` reload watcher (found on a fresh clone) — done
+
+**Bug**: `make dev` ran `uvicorn app.main:app --reload` from `backend/` with no `--reload-dir`, so the watcher covered all of `backend/`, `.venv` included. Reproduced on v0.1.0: the log said `Will watch for changes in ... \backend` and, right at startup, `WatchFiles detected changes in '.venv\Lib\site-packages\anthropic\types\...' ... Reloading...` (installed packages being compiled and imported count as changes). Timing dependent: on this machine the web app still came up in that run, but the API restarted itself at startup, and on a fresh clone (where `.venv` was just created) it can loop and delay `:5173`.
+**Fix**: `scripts/tasks.py` builds the command in `api_dev_command()` with `--reload-dir app`; the watcher now lists only `backend\app`.
+**Tests**: `backend/tests/test_tasks.py` (seen failing first): the command has `--reload` and exactly one `--reload-dir app`, and still serves `app.main:app` on 8000.
+**Verified with the real thing** (`make dev`, key blank, replay): log lists only `backend\app`; no `WatchFiles detected changes` and no reload through startup; positive control: touching `backend/app/config.py` triggers exactly one reload (reverted); a fresh Chrome profile rendered `http://localhost:5173` with API data in 476 ms, 0 console problems. `make test`: backend 527, frontend 152; ruff clean.
+**Known gap**: `--reload-dir app` means edits outside `backend/app` (e.g. `evals/`, `scripts/`) do not restart the API; restart `make dev` for those.
