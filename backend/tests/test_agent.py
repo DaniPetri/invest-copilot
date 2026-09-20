@@ -202,7 +202,7 @@ async def test_grounded_numbers_from_tool_results_and_the_user_pass(ctx):
             router("simulate"),
             tool_turn(tool_use("simulate_savings_plan", args)),
             text_turn(),
-            render_turn([text_block(text)]),
+            render_turn([text_block(text), {"type": "fan_chart", "result_id": "r1"}]),
         ]
     )
     events = await collect(Agent(llm, ctx, settings(numbers_guard="fail")), "50 € im Monat")
@@ -486,3 +486,76 @@ async def test_a_client_that_disconnects_mid_stream_leaves_a_cancelled_trace(ctx
 
     stored = traces.get(first["trace_id"])
     assert stored["status"] == "cancelled" and stored["total_ms"] is not None
+
+
+# ── guardrails: text integrity and expected blocks ──────────────────────────
+
+
+def sim_args():
+    return {"monthly_eur": 50, "years": 5, "product_ids": ["P03"], "weights": None, "fee_per_execution": None}
+
+
+async def test_garbled_text_triggers_a_repair_round_and_the_clean_draft_is_delivered(ctx):
+    garbled = "Dein Depot: die gr\x0c6\x0cten Positionen sind unten."  # a form feed where the model meant "ö"
+    llm = ScriptedLLM(
+        [
+            router("learn"),
+            text_turn(),
+            render_turn([text_block(garbled)]),
+            render_turn([text_block("Dein Depot: die größten Positionen sind unten.")]),
+        ]
+    )
+    events = await collect(Agent(llm, ctx, settings()), "Was ist ein ETF?")
+    repair = llm.requests[-1].messages[-1]["content"][0]
+    assert (
+        repair["is_error"] is True
+        and "text_integrity" in repair["content"]
+        and "control characters" in repair["content"]
+    )
+    assert checks(events)["text_integrity"]["status"] == "pass" and checks(events)["repair"]["status"] == "flag"
+    assert one(events, "ui")["blocks"][0]["markdown"] == "Dein Depot: die größten Positionen sind unten."
+
+
+async def test_text_that_stays_garbled_after_the_repair_round_becomes_the_safe_fallback(ctx):
+    truncated = 'Hier ist der Eignungscheck f\x07auf deinem Kundenprofil f"} ]'  # a bell character and JSON debris
+    llm = ScriptedLLM(
+        [router("learn"), text_turn(), render_turn([text_block(truncated)]), render_turn([text_block(truncated)])]
+    )
+    events = await collect(Agent(llm, ctx, settings()), "Was ist ein ETF?")
+    assert checks(events)["fallback"]["status"] == "fail" and checks(events)["text_integrity"]["status"] == "fail"
+    assert "Ersatzantwort" in checks(events)["fallback"]["detail"]
+    assert "Eignungscheck" not in json.dumps(
+        one(events, "ui"), ensure_ascii=False
+    )  # the garbage never reaches the client
+
+
+async def test_an_answer_that_leaves_out_the_block_for_a_tool_result_is_repaired(ctx):
+    args = {"customer_id": "elif", "product_id": "P22"}
+    suitability = {"type": "suitability", "result_id": "r1"}
+    llm = ScriptedLLM(
+        [
+            router("product_question"),
+            tool_turn(tool_use("suitability_check", args)),
+            text_turn(),
+            render_turn([text_block("Hier ist der Eignungscheck.")]),  # text only: the result is not shown
+            render_turn([text_block("Hier ist der Eignungscheck."), suitability]),
+        ]
+    )
+    events = await collect(Agent(llm, ctx, settings()), "Passt P22?", customer_id="elif")
+    repair = llm.requests[-1].messages[-1]["content"][0]["content"]
+    assert "expected_blocks" in repair and "suitability_check (r1) needs a suitability block" in repair
+    assert checks(events)["expected_blocks"]["status"] == "pass" and checks(events)["repair"]["status"] == "flag"
+    assert [b["type"] for b in one(events, "ui")["blocks"]] == ["text", "suitability"]
+
+
+async def test_lookup_tools_do_not_need_a_block_and_a_matching_block_satisfies_the_guard(ctx):
+    llm = ScriptedLLM(
+        [
+            router("simulate"),
+            tool_turn(tool_use("simulate_savings_plan", sim_args())),
+            text_turn(),
+            render_turn([text_block("Das Ergebnis siehst du im Diagramm."), {"type": "fan_chart", "result_id": "r1"}]),
+        ]
+    )
+    events = await collect(Agent(llm, ctx, settings()), "50 € im Monat")
+    assert checks(events)["expected_blocks"]["status"] == "pass" and "repair" not in checks(events)

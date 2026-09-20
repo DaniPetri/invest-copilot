@@ -5,6 +5,7 @@ import pytest
 from app.agent.ui import RenderUIInput, render_ui_tool_definition
 from app.guardrails.advice import find_advice_language, looks_like_advice_request
 from app.guardrails.citations import cited_ids, strip_citations, unknown_citations
+from app.guardrails.integrity import find_malformed_text, missing_display_blocks
 from app.guardrails.numbers import build_sources, extract_numbers, parse_candidates, ungrounded_numbers
 from app.guardrails.pii import redact
 from app.schemas.events import RouterDecision
@@ -226,3 +227,49 @@ def test_render_ui_input_rejects_unknown_blocks_fields_and_empty_answers():
         RenderUIInput.model_validate({"blocks": [{"type": "text", "markdown": "x", "citations": ["a"]}]})
     with pytest.raises(ValueError):
         RenderUIInput.model_validate({"blocks": []})
+
+
+# ── integrity ───────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("Die gr\x0c6\x0cten Anteile", "control characters"),  # the a14 defect: form feed instead of an umlaut
+        ("Hier ist der Eignungscheck f\aauf", "control characters"),  # the a27 defect: a bell character
+        ("zwwert \x08zelwert", "control characters"),
+        ("Kaputt \ufffd hier", "replacement character"),
+        ('Kundenprofil f"} ]', "JSON debris"),
+        ('Text {"markdown": "x"}', "JSON debris"),
+        (r"Die gr\u00f6\u00dften Anteile", "literal escape"),
+    ],
+)
+def test_malformed_text_is_found(text, expected):
+    assert any(expected in p for p in find_malformed_text(text))
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Die größten Anteile liegen in Technologie: 59,7 %.",
+        "Zeile eins.\nZeile zwei.\tEingerückt.",
+        'Ein "zitierter" Begriff und ein Klammerpaar (wie hier) [[cite:KID:P07:p2:kosten]].',
+        "**Fett** und ein Bindestrich – dazu 1.234,56 € und 0,15 %.",
+        "Preis-Leistung {ist} gut",
+        "",
+    ],
+)
+def test_ordinary_german_text_is_not_flagged_as_malformed(text):
+    assert find_malformed_text(text) == []
+
+
+def test_missing_display_blocks_names_the_tool_and_the_needed_block():
+    from app.schemas.ui import TextBlock
+    from app.tools.registry import ResultStore
+
+    results = ResultStore()
+    results.add("suitability_check", {}, "x")
+    results.add("screen_products", {}, "x")  # a lookup tool: never needs a block
+    results.add("cost_projection", {}, "x", ok=False)  # a failed call has nothing to show
+    problems = missing_display_blocks([TextBlock(markdown="Nur Text")], results)
+    assert problems == ["suitability_check (r1) needs a suitability block"]

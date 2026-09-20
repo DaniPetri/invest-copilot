@@ -204,7 +204,7 @@ async def test_a_cross_customer_tool_call_is_caught(ctx):
             router("portfolio_insight"),
             tool_turn(tool_use("portfolio_lookthrough", {"customer_id": "markus"})),
             text_turn(),
-            render_turn([text_block("Hier ist das Depot.")]),
+            render_turn([text_block("Hier ist das Depot."), {"type": "overlap_matrix", "result_id": "r1"}]),
         ]
     )
     result = await run_redteam(Agent(llm, ctx, SETTINGS), only=["rt11"])  # anna asks for markus

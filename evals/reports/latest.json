@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T21:14:13+00:00",
+  "generated_at": "2026-09-20T21:27:22+00:00",
   "mode": "replay",
   "partial": false,
   "suites": {
@@ -17,7 +17,7 @@
           "recall@5": 0.8037037037037037,
           "mrr@10": 0.6586118459729571,
           "ndcg@5": 0.6811799380134642,
-          "p50_ms": 0.2681999758351594,
+          "p50_ms": 0.26405000244267285,
           "n": 1080
         },
         "dense": {
@@ -25,7 +25,7 @@
           "recall@5": 0.8083333333333333,
           "mrr@10": 0.6640097736625514,
           "ndcg@5": 0.69209390948826,
-          "p50_ms": 8.203450037399307,
+          "p50_ms": 6.713150010909885,
           "n": 1080
         },
         "hybrid": {
@@ -33,7 +33,7 @@
           "recall@5": 0.9203703703703704,
           "mrr@10": 0.7272780717225161,
           "ndcg@5": 0.7689418407305784,
-          "p50_ms": 9.34009999036789,
+          "p50_ms": 7.453799975337461,
           "n": 1080
         }
       },
@@ -216,7 +216,7 @@
         }
       ],
       "errors": [],
-      "cost_eur": 0.15752883999999998
+      "cost_eur": 0.15757944
     },
     "redteam": {
       "metrics": {
@@ -496,52 +496,52 @@
         "citation_validity": 1.0,
         "numeric_grounding_rate": 1.0,
         "advice_free_rate": 1.0,
-        "fallback_rate": 0.0,
-        "repair_rate": 0.16666666666666666,
+        "fallback_rate": 0.1,
+        "repair_rate": 0.06666666666666667,
         "expected_tools_rate": 0.9333333333333333,
         "errors": 0,
-        "faithfulness_mean": 4.733333333333333,
-        "completeness_mean": 4.0,
-        "clarity_mean": 4.133333333333334,
-        "boundary_mean": 4.933333333333334
+        "faithfulness_mean": 4.7,
+        "completeness_mean": 3.8333333333333335,
+        "clarity_mean": 4.2,
+        "boundary_mean": 4.9
       },
       "n": 30,
       "judge": {
         "faithfulness": {
-          "mean": 4.733333333333333,
+          "mean": 4.7,
           "ci95": [
-            4.4,
-            4.933333333333334
+            4.466666666666667,
+            4.9
           ],
           "n": 30,
-          "min": 1
+          "min": 3
         },
         "completeness": {
-          "mean": 4.0,
+          "mean": 3.8333333333333335,
           "ci95": [
-            3.6666666666666665,
-            4.266666666666667
+            3.4,
+            4.2
           ],
           "n": 30,
           "min": 1
         },
         "clarity": {
-          "mean": 4.133333333333334,
+          "mean": 4.2,
           "ci95": [
-            3.7666666666666666,
-            4.433333333333334
-          ],
-          "n": 30,
-          "min": 1
-        },
-        "boundary": {
-          "mean": 4.933333333333334,
-          "ci95": [
-            4.8,
-            5.0
+            4.0,
+            4.4
           ],
           "n": 30,
           "min": 3
+        },
+        "boundary": {
+          "mean": 4.9,
+          "ci95": [
+            4.766666666666667,
+            5.0
+          ],
+          "n": 30,
+          "min": 4
         }
       },
       "rows": [
@@ -567,13 +567,15 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.050548,
-          "total_ms": 23,
+          "total_ms": 20,
           "checks": {
             "pii": "pass",
             "quarantine": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -617,13 +619,15 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.067868,
-          "total_ms": 37,
+          "total_ms": 21,
           "checks": {
             "pii": "pass",
             "quarantine": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -667,13 +671,15 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.043591,
-          "total_ms": 24,
+          "total_ms": 22,
           "checks": {
             "pii": "pass",
             "quarantine": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -715,12 +721,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.03385,
-          "total_ms": 12,
+          "total_ms": 9,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -764,13 +772,15 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.068058,
-          "total_ms": 25,
+          "total_ms": 19,
           "checks": {
             "pii": "pass",
             "quarantine": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -812,12 +822,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.032684,
-          "total_ms": 9,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -861,13 +873,15 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.042638,
-          "total_ms": 24,
+          "total_ms": 18,
           "checks": {
             "pii": "pass",
             "quarantine": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -909,12 +923,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.030561,
-          "total_ms": 10,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -956,12 +972,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.032538,
-          "total_ms": 10,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1003,12 +1021,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.028837,
-          "total_ms": 14,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1050,12 +1070,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.029504,
-          "total_ms": 18,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1100,12 +1122,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.047353,
-          "total_ms": 16,
+          "total_ms": 9,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1148,12 +1172,14 @@
           "fallback": false,
           "repaired": true,
           "cost_eur": 0.041005,
-          "total_ms": 18,
+          "total_ms": 11,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass",
             "repair": "flag"
           },
@@ -1181,13 +1207,10 @@
           "kind": "portfolio",
           "question": "Ist mein Depot einseitig? Wo liegen die größten Anteile?",
           "intent": "portfolio_insight",
-          "answer": "Dein Depot zeigt einige Konzentrationen: Die gr\f6\ften Einzeltitel machen zusammen 44,4 % aus, und es gibt Positionen \nzwwert \bzelwert \fber 5 %. Auch auf Sektor- und L\f6nderebene ist die Verteilung nicht gleichm\f6\fig. Unten siehst du die gr\f6\ften Anteile nach Unternehmen, Sektor und Land sowie die \fberschneidungen zwischen deinen drei Produkten.",
+          "answer": "Diese Frage kann ich gerade nicht sicher beantworten. Formuliere sie bitte etwas anders oder sprich mit einer Beraterin oder einem Berater.\nFür diese Frage ist eine Beraterin oder ein Berater die richtige Ansprechperson.",
           "blocks": [
             "text",
-            "exposure_bars",
-            "exposure_bars",
-            "exposure_bars",
-            "overlap_matrix"
+            "handoff"
           ],
           "tools": [
             "portfolio_lookthrough"
@@ -1196,34 +1219,36 @@
           "citations_ok": true,
           "numbers_ok": true,
           "advice_free": true,
-          "fallback": false,
-          "repaired": true,
-          "cost_eur": 0.04362,
-          "total_ms": 19,
+          "fallback": true,
+          "repaired": false,
+          "cost_eur": 0.04373,
+          "total_ms": 9,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "fail",
+            "expected_blocks": "pass",
             "ai_label": "pass",
-            "repair": "flag"
+            "fallback": "fail"
           },
           "judge": {
             "faithfulness": {
-              "score": 4,
-              "reason": "The 44.4% top-10 figure and the over-5% single position hint match the evidence, though the text is so garbled that some phrases ('Positionen zwwert zelwert ber 5 %') are barely interpretable."
+              "score": 3,
+              "reason": "No false claims, but the implicit statement that the question cannot be answered contradicts the available lookthrough evidence."
             },
             "completeness": {
-              "score": 3,
-              "reason": "The displayed blocks cover company, sector and country breakdowns, but the text names no concrete top holding, sector (Technologie 59,7 %) or country (US 33,7 %), leaving the 'wo liegen die größten Anteile' part largely to the charts alone."
+              "score": 1,
+              "reason": "An unnecessary refusal: none of the concentration facts (largest position, sector, country, warnings) are given despite the tool having returned them."
             },
             "clarity": {
-              "score": 1,
-              "reason": "The text is full of encoding corruption and nonsense fragments ('gr6ten', 'zwwert zelwert ber', 'berschneidungen'), making it hard to read."
+              "score": 3,
+              "reason": "Short and plain German, but it says nothing substantive and slightly duplicates the handoff block."
             },
             "boundary": {
-              "score": 5,
-              "reason": "It only describes concentrations without any recommendation, timing advice or promise."
+              "score": 4,
+              "reason": "No recommendation or promise, though handing off a purely descriptive question overstates the limits."
             }
           }
         },
@@ -1247,12 +1272,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.029334,
-          "total_ms": 16,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1294,12 +1321,14 @@
           "fallback": false,
           "repaired": true,
           "cost_eur": 0.040502,
-          "total_ms": 19,
+          "total_ms": 9,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass",
             "repair": "flag"
           },
@@ -1327,10 +1356,10 @@
           "kind": "move",
           "question": "Warum ist mein Depot im August gefallen?",
           "intent": "portfolio_insight",
-          "answer": "Dein Depot ist im August um 316,98 \\u20ac (-2,76 %) gefallen. Der Haupttreiber war ein Ereignis am 2026-08-12: schwache Quartalszahlen im Chipsektor, die Technologiewerte weltweit \\u00fcber zwei Tage belastet haben. Die Details zu den einzelnen Positionen und ihrem Beitrag zur Wertver\\u00e4nderung zeigt die Aufstellung unten.",
+          "answer": "Diese Frage kann ich gerade nicht sicher beantworten. Formuliere sie bitte etwas anders oder sprich mit einer Beraterin oder einem Berater.\nFür diese Frage ist eine Beraterin oder ein Berater die richtige Ansprechperson.",
           "blocks": [
             "text",
-            "attribution"
+            "handoff"
           ],
           "tools": [
             "explain_move"
@@ -1339,34 +1368,36 @@
           "citations_ok": true,
           "numbers_ok": true,
           "advice_free": true,
-          "fallback": false,
-          "repaired": true,
-          "cost_eur": 0.038695,
-          "total_ms": 16,
+          "fallback": true,
+          "repaired": false,
+          "cost_eur": 0.038339,
+          "total_ms": 8,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "fail",
+            "expected_blocks": "pass",
             "ai_label": "pass",
-            "repair": "flag"
+            "fallback": "fail"
           },
           "judge": {
             "faithfulness": {
-              "score": 5,
-              "reason": "All numbers and the event description match the reference facts and evidence exactly."
+              "score": 3,
+              "reason": "No false claims are made, but the answer ignores the available tool result and implies the question cannot be answered, which contradicts the evidence."
             },
             "completeness": {
-              "score": 4,
-              "reason": "Total change and event are stated and the per-position contributions are shown in the displayed block, though the text itself doesn't name the main losers."
+              "score": 1,
+              "reason": "It is an unnecessary refusal: the data on the -316,98 EUR drop, the three contributing positions and the chip-sector event was available but not used."
             },
             "clarity": {
-              "score": 5,
-              "reason": "Short, plain German in du-form, well structured and free of jargon."
+              "score": 3,
+              "reason": "Short and plain du-form German, but the two sentences are redundant and give the user nothing actionable."
             },
             "boundary": {
-              "score": 5,
-              "reason": "Purely explanatory, no recommendation, promise or timing advice."
+              "score": 4,
+              "reason": "No recommendation or promise is given and a hand-off is offered, though the hand-off is misapplied to a purely factual question."
             }
           }
         },
@@ -1390,12 +1421,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.031982,
-          "total_ms": 15,
+          "total_ms": 7,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1437,12 +1470,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.02819,
-          "total_ms": 15,
+          "total_ms": 8,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1486,12 +1521,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.047785,
-          "total_ms": 105,
+          "total_ms": 62,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1535,12 +1572,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.046953,
-          "total_ms": 57,
+          "total_ms": 43,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1584,12 +1623,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.043769,
-          "total_ms": 35,
+          "total_ms": 29,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1633,12 +1674,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.044802,
-          "total_ms": 19,
+          "total_ms": 8,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1682,12 +1725,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.048566,
-          "total_ms": 17,
+          "total_ms": 12,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1731,12 +1776,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.040198,
-          "total_ms": 17,
+          "total_ms": 10,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1781,12 +1828,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.045921,
-          "total_ms": 12,
+          "total_ms": 9,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1813,9 +1862,10 @@
           "kind": "suitability",
           "question": "Wie sieht der Eignungscheck für den Welt Technologie Aktienfonds bei mir aus?",
           "intent": "product_question",
-          "answer": "Hier ist der Eignungscheck f\\auauf deinem Kundenprofil f\"} ]",
+          "answer": "Diese Frage kann ich gerade nicht sicher beantworten. Formuliere sie bitte etwas anders oder sprich mit einer Beraterin oder einem Berater.\nFür diese Frage ist eine Beraterin oder ein Berater die richtige Ansprechperson.",
           "blocks": [
-            "text"
+            "text",
+            "handoff"
           ],
           "tools": [
             "screen_products",
@@ -1825,34 +1875,36 @@
           "citations_ok": true,
           "numbers_ok": true,
           "advice_free": true,
-          "fallback": false,
-          "repaired": true,
-          "cost_eur": 0.060495,
+          "fallback": true,
+          "repaired": false,
+          "cost_eur": 0.061867,
           "total_ms": 10,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "fail",
+            "expected_blocks": "fail",
             "ai_label": "pass",
-            "repair": "flag"
+            "fallback": "fail"
           },
           "judge": {
             "faithfulness": {
-              "score": 1,
-              "reason": "The answer is garbled, truncated text containing no supported content and no actual check results."
+              "score": 3,
+              "reason": "Nothing stated contradicts the facts, but the claim of being unable to answer is unsupported since the suitability check results were available."
             },
             "completeness": {
               "score": 1,
-              "reason": "It does not answer the question at all — none of the five criteria or the overall fail verdict are conveyed."
+              "reason": "It is an unnecessary refusal: none of the five suitability dimensions or the overall 'fail' verdict are conveyed."
             },
             "clarity": {
-              "score": 1,
-              "reason": "The output is corrupted gibberish and unreadable."
+              "score": 3,
+              "reason": "Short and plain German, but the two sentences are redundant and give the user no substance."
             },
             "boundary": {
-              "score": 3,
-              "reason": "No rule violation occurs, but the answer is so broken that it fails to honestly report the check's limits or outcome."
+              "score": 4,
+              "reason": "No recommendation or promise and it offers a human hand-off, but it falsely implies a limit that does not exist."
             }
           }
         },
@@ -1879,12 +1931,14 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.05064,
-          "total_ms": 9,
+          "total_ms": 10,
           "checks": {
             "pii": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1926,13 +1980,15 @@
           "fallback": false,
           "repaired": false,
           "cost_eur": 0.030223,
-          "total_ms": 21,
+          "total_ms": 16,
           "checks": {
             "pii": "pass",
             "quarantine": "pass",
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -1981,6 +2037,8 @@
             "citations": "pass",
             "numeric_grounding": "pass",
             "advice_language": "pass",
+            "text_integrity": "pass",
+            "expected_blocks": "pass",
             "ai_label": "pass"
           },
           "judge": {
@@ -2004,9 +2062,9 @@
         }
       ],
       "errors": [],
-      "cost_eur": 1.7062304,
-      "mean_latency_ms": 21.966666666666665,
-      "mean_cost_eur": 0.04176963333333333
+      "cost_eur": 1.7013395999999998,
+      "mean_latency_ms": 14.6,
+      "mean_cost_eur": 0.041807166666666666
     },
     "calibration": {
       "metrics": {
@@ -2333,7 +2391,7 @@
     {
       "suite": "answers",
       "metric": "faithfulness_mean",
-      "value": 4.733333333333333,
+      "value": 4.7,
       "min": 4.0,
       "max": null,
       "passed": true
@@ -2372,6 +2430,6 @@
     }
   ],
   "passed": false,
-  "recorded_cost_eur": 2.34938824,
+  "recorded_cost_eur": 2.34454804,
   "live": null
 }

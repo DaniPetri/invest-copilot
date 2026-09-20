@@ -3,7 +3,7 @@ is shown in the trace panel. A `fail` triggers one repair round (violations go b
 
 Input (before any LLM):   pii, router_flags
 Retrieval:                quarantine
-Output (on hydrated blocks): citations, numeric_grounding, advice_language, ai_label
+Output (on hydrated blocks): citations, numeric_grounding, advice_language, text_integrity, expected_blocks, ai_label
 """
 
 from dataclasses import dataclass, field
@@ -14,6 +14,7 @@ from ..schemas.ui import HandoffBlock, TextBlock, UIBlock
 from ..tools.registry import ResultStore
 from .advice import find_advice_language
 from .citations import cited_ids, unknown_citations
+from .integrity import find_malformed_text, missing_display_blocks
 from .numbers import build_sources, ungrounded_numbers
 
 Status = Literal["pass", "flag", "fail"]
@@ -135,6 +136,27 @@ def check_output(
         )
     else:
         checks.append(_check("advice_language", "pass", "Keine Empfehlungssprache gefunden."))
+
+    # readable text: no control characters, JSON debris or leaked escapes (the model mangled umlaut escapes once)
+    malformed = find_malformed_text(text)
+    if malformed:
+        checks.append(_check("text_integrity", "fail", f"Text beschädigt: {'; '.join(malformed)}."))
+        violations.append(
+            f"text_integrity: the text is malformed ({'; '.join(malformed)}). Write plain German text with the "
+            "umlauts (ä ö ü ß) typed directly, no backslash escapes, no JSON fragments, and finish every sentence."
+        )
+    else:
+        checks.append(_check("text_integrity", "pass", "Text ist lesbar und vollständig formatiert."))
+
+    # every result the user asked for is shown by its block, not only mentioned
+    missing = missing_display_blocks(blocks, results)
+    if missing:
+        checks.append(_check("expected_blocks", "fail", f"Ergebnis nicht angezeigt: {'; '.join(missing)}."))
+        violations.append(
+            f"expected_blocks: {'; '.join(missing)}. Add the block that shows the result, referencing its result_id."
+        )
+    else:
+        checks.append(_check("expected_blocks", "pass", "Alle Werkzeugergebnisse werden angezeigt."))
 
     # AI label: the client puts the KI label on every text block, so an answer without one has nothing to carry it
     if any(isinstance(b, TextBlock) for b in blocks):

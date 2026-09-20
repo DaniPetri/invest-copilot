@@ -34,3 +34,13 @@ by the request hash, so a changed rubric, prompt, question or answer never reuse
   grade text and blocks together. Faithfulness went 4.33 -> 4.73 and completeness 3.13 -> 4.00 on the same 30
   recorded answers. Only judge cassettes were re-recorded; the agent runs are unchanged.
 - The mean-latency row was removed from the answers table: cached replays are not timed, so it read 0.1 s.
+
+## 2026-09-20 · text_integrity and expected_blocks guards
+
+- The answers suite showed three delivered answers with broken text (a14, a17, a27) that every guard passed. Two
+  guardrails were added (`text_integrity`, `expected_blocks`), so these conversations now end in the safe fallback
+  and the answers table reports them as fallbacks (3 of 30) instead of scoring garbled text.
+- a14, a17 and a27 were re-recorded live with fresh samples (0.18 EUR) and were rejected again by the same guards,
+  so the recorded outcome is the fallback. Faithfulness 4.73 -> 4.70, completeness 4.00 -> 3.83, clarity 4.13 -> 4.20:
+  the movement is the three fallbacks replacing three broken answers, not a change in the other 27.
+
