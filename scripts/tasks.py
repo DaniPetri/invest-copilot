@@ -64,6 +64,20 @@ def fixtures() -> int:
     return run(["uv", "run", "python", "../scripts/build_frontend_fixtures.py"], BACKEND)
 
 
+def eval_all() -> int:
+    """All five suites in replay mode (recorded LLM responses, no key). Live: `python -m evals.run --mode live`."""
+    return run(["uv", "run", "--project", "backend", "python", "-m", "evals.run", "--suite", "all", "--mode", "replay"])
+
+
+def eval_ci() -> int:
+    """SPEC §11: retrieval (no LLM) + router + redteam in replay mode; exits 1 when a gate fails."""
+    generated = ROOT / "data" / "generated"
+    if not (generated / "bm25.pkl").is_file():  # the retrieval suite needs the universe and its index
+        if code := first_failure(0 if (generated / "products.json").is_file() else data(), ingest()):
+            return code
+    return run(["uv", "run", "--project", "backend", "python", "-m", "evals.run", "--suite", "ci", "--mode", "replay"])
+
+
 def dev() -> int:
     """API on :8000 and web on :5173 together; Ctrl-C stops both."""
     procs = [
@@ -102,8 +116,8 @@ TARGETS: dict[str, Callable[[], int]] = {
     "ingest": ingest,
     "dev": dev,
     "test": test,
-    "eval": not_yet("eval", "M7"),
-    "eval-ci": not_yet("eval-ci", "M7"),
+    "eval": eval_all,
+    "eval-ci": eval_ci,
     "contracts": contracts,
     "fixtures": fixtures,
     "record": not_yet("record", "M8"),

@@ -45,8 +45,9 @@ class Settings(BaseSettings):
     record_refresh: bool = False  # RECORD_REFRESH=1: `make record` overwrites existing cassettes
     # Outside data/generated so `make data` does not wipe the traces.
     trace_db: Path = REPO_ROOT / "data" / "traces.sqlite"
-    # "flag": ungrounded numbers are reported in the trace. "fail": they trigger the repair round (NUMBERS_GUARD=fail).
-    numbers_guard: Literal["flag", "fail"] = "flag"
+    # "fail" (default, SPEC non-negotiable #1): an ungrounded number triggers the repair round, then the safe fallback.
+    # "flag": reported in the trace only (NUMBERS_GUARD=flag).
+    numbers_guard: Literal["flag", "fail"] = "fail"
 
     @property
     def has_api_key(self) -> bool:

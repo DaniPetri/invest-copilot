@@ -1,0 +1,2 @@
+{"first_user": "Warum ist mein Depot im August gefallen?", "hash": "fbd3be811ccee8e31da58a034da6e20f2a00d073d0617ae59ced7d9df195c8db", "kind": "meta", "label": "orchestrator", "model": "claude-sonnet-5", "n_messages": 3, "parts": {"max_tokens": "bfa0ec8bdf29", "messages": "356e0e86aaf3", "model": "30c1f92362fb", "system": "f9a9f310b0e6", "thinking": "d12700b52885", "tools": "773488d744c7"}}
+{"content": [{"text": "BEREIT", "type": "text"}], "input_tokens": 4619, "kind": "response", "latency_ms": 5558, "model": "claude-sonnet-5", "output_tokens": 7, "stop_reason": "end_turn"}

@@ -1,0 +1,2 @@
+{"first_user": "Wie stark überschneiden sich meine ETFs?", "hash": "7b18a08d2b2e3c6ee5da86c92d681dc5d04eb254bbdeee4efe35b012c8e135ea", "kind": "meta", "label": "orchestrator", "model": "claude-sonnet-5", "n_messages": 3, "parts": {"max_tokens": "bfa0ec8bdf29", "messages": "a46c95527b3b", "model": "30c1f92362fb", "system": "f9a9f310b0e6", "thinking": "d12700b52885", "tools": "773488d744c7"}}
+{"content": [{"text": "BEREIT", "type": "text"}], "input_tokens": 5157, "kind": "response", "latency_ms": 1272, "model": "claude-sonnet-5", "output_tokens": 7, "stop_reason": "end_turn"}

@@ -167,11 +167,16 @@ async def test_tool_errors_go_back_to_the_model_and_the_answer_can_still_render(
 async def test_a_hallucinated_number_is_flagged(ctx):
     text = "Dein Depot ist um 47,3 % gefallen."  # no tool result contains 47,3
     llm = ScriptedLLM([router("portfolio_insight"), text_turn(), render_turn([text_block(text)])])
-    events = await collect(Agent(llm, ctx, settings()), "Wie läuft mein Depot?")
+    events = await collect(Agent(llm, ctx, settings(numbers_guard="flag")), "Wie läuft mein Depot?")
 
     c = checks(events)["numeric_grounding"]
     assert c["status"] == "flag" and "47,3" in c["detail"]
     assert names(events)[-1] == "done"  # flag mode: reported in the trace, the answer is still delivered
+
+
+def test_the_numbers_guard_defaults_to_fail():
+    """SPEC non-negotiable #1: an ungrounded number is repaired or replaced, not just reported."""
+    assert settings().numbers_guard == "fail"
 
 
 async def test_in_fail_mode_a_hallucinated_number_triggers_one_repair_round(ctx):
