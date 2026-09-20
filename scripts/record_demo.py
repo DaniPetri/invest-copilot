@@ -19,13 +19,15 @@ os.environ["LLM_MODE"] = "record"  # before the settings are read
 sys.path[:0] = [str(ROOT / "backend"), str(Path(__file__).parent)]
 
 from app.config import get_settings  # noqa: E402
-from smoke_demo import check, load_questions, parse_sse, summary  # noqa: E402
+from smoke_demo import check, load_questions, load_ui_matrix, parse_sse, summary  # noqa: E402
 
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--refresh", action="store_true", help="re-record even when a cassette exists (spends money)")
-    ap.add_argument("--only", default="", help="comma-separated question ids")
+    ap.add_argument("--only", default="", help="comma-separated question ids (UI ones look like u_august/anna)")
+    ap.add_argument("--no-ui", action="store_true", help="skip the one-click UI questions x all personas")
+    ap.add_argument("--max-cost-eur", type=float, default=2.0, help="stop when the answers' shown cost adds up to this")
     args = ap.parse_args(argv)
     if args.refresh:
         os.environ["RECORD_REFRESH"] = "1"
@@ -43,13 +45,17 @@ def main(argv: list[str]) -> int:
     from app.main import app  # noqa: PLC0415
 
     wanted = {x for x in args.only.split(",") if x}
-    questions = [q for q in load_questions() if not wanted or q["id"] in wanted]
+    questions = load_questions() + ([] if args.no_ui else load_ui_matrix())
+    questions = [q for q in questions if not wanted or q["id"] in wanted]
     cassettes = lambda: {p.name for p in settings.cassette_dir.glob("*.jsonl")}  # noqa: E731
     before = cassettes()
     failed = 0
     spent = 0.0
     with TestClient(app) as client:
         for q in questions:
+            if spent > args.max_cost_eur:
+                print(f"stopping: {spent:.2f} EUR shown so far exceeds --max-cost-eur {args.max_cost_eur}", file=sys.stderr)
+                return 1
             with client.stream("POST", "/api/chat", json={"customer_id": q["customer_id"], "message": q["message"]}) as res:
                 events = parse_sse(res.iter_lines())
             problems = check(q, events, "record")

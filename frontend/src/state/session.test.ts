@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { replay } from '../lib/fixtures'
 import { readStream } from '../test/helpers'
 import type { SSEEvent } from '../types/contracts'
-import { initialState, reducer, type State } from './session'
+import { CASSETTE_MISS_TEXT, initialState, reducer, type State } from './session'
 
 async function play(stream: string): Promise<{ state: State; events: SSEEvent[] }> {
   let state = reducer(initialState, { type: 'start', question: 'Frage' })
@@ -65,6 +65,14 @@ describe('session reducer', () => {
     let state = reducer(initialState, { type: 'start', question: 'Frage' })
     state = reducer(state, { type: 'event', id: 1, entry: { seq: 0, t: 0, event: { event: 'error', data: { code: 'llm_unavailable', message: 'Modell nicht erreichbar' } } } })
     expect(state.messages[0]).toMatchObject({ status: 'error', error: 'Modell nicht erreichbar' })
+  })
+
+  it('a cassette miss (unrecorded question in replay mode) shows a German note, not the hash and make record', () => {
+    let state = reducer(initialState, { type: 'start', question: 'Frage' })
+    const message = 'No cassette for this request (sha256 9327fbd1…). Run `make record` with an API key to record it.'
+    state = reducer(state, { type: 'event', id: 1, entry: { seq: 0, t: 0, event: { event: 'error', data: { code: 'cassette_miss', message } } } })
+    expect(state.messages[0]).toMatchObject({ status: 'error', error: CASSETTE_MISS_TEXT })
+    expect(state.messages[0].error).not.toMatch(/sha256|make record/)
   })
 
   it('a stream that just ends does not stay "streaming" forever', () => {

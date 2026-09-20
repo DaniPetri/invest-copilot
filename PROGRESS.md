@@ -349,3 +349,19 @@ Manual browser click-through (headless Chrome over CDP, real clicks and typing, 
 **Tests**: `backend/tests/test_tasks.py` (seen failing first): the command has `--reload` and exactly one `--reload-dir app`, and still serves `app.main:app` on 8000.
 **Verified with the real thing** (`make dev`, key blank, replay): log lists only `backend\app`; no `WatchFiles detected changes` and no reload through startup; positive control: touching `backend/app/config.py` triggers exactly one reload (reverted); a fresh Chrome profile rendered `http://localhost:5173` with API data in 476 ms, 0 console problems. `make test`: backend 527, frontend 152; ruff clean.
 **Known gap**: `--reload-dir app` means edits outside `backend/app` (e.g. `evals/`, `scripts/`) do not restart the API; restart `make dev` for those.
+
+## v0.1.2 · Fix: replay cassettes are persona-specific; UI questions were not recorded for all personas — done
+
+**Report**: on a fresh clone, replay mode answered the discover and August questions with `cassette_miss ... closest recording differs in: system`. Presumed cause: the system prompt changed after recording.
+**Finding (the presumption was wrong)**: no prompt-affecting file changed after M8 (`git log` on prompts, orchestrator, ui, router, tool registry), a fresh clone of `main` built from scratch passes 8/8 with zero misses, and the original recordings of q1 and i1 were served unchanged when the recorder ran on the current code. Re-recording the 8 demo questions would have produced identical cassettes. The real cause: `orchestrator_system()` names the customer, so a cassette is valid only for the persona it was recorded with, and the UI sends its one-click questions with whichever persona is selected. Measured on the fresh clone (3 personas x every UI-reachable question): the discover chip worked only as Anna, the August chip only as Markus (`differs in: system` otherwise), and five more UI questions (depot, simulate and advice chips, the chat example, the depot "Erklären lassen" button) had no cassette for any persona.
+**Fix**
+- `scripts/demo_questions.yaml`: new `ui_prompts` (7 questions the UI offers). `scripts/record_demo.py` records each for anna, markus and elif (`--no-ui` to skip, `--max-cost-eur`, default 2). `scripts/smoke_demo.py --ui` replays the whole matrix over HTTP.
+- 51 new cassettes recorded live with the current code (about 0.65 EUR shown by the answers, part of it reused cassettes). The 8 original demo cassettes are unchanged.
+- `backend/tests/test_demo_questions.py` (seen failing first, 19 of 21 combinations): every UI question x persona replays with no error and the expected tools and blocks; every string in `HomeScreen.tsx` / `ChatScreen.tsx` / the depot button must be in the recorded list (fails when the UI text drifts from the cassettes).
+- UI: a `cassette_miss` error shows a German note instead of the English message with the sha256 (`session.tsx`, test added).
+- README: replay section explains the persona rule.
+**Verified**: fresh `git clone` of the public repo, `setup`, `data`, `ingest`, no key, replay: `smoke_demo.py` 8/8 and `smoke_demo.py --ui` 21/21, zero cassette misses; `make test` backend 550, frontend 153, ruff clean.
+**Known gaps**
+- The simulate chip ("Wie entwickeln sich 50 € im Monat über 20 Jahre?") names no product, so every persona gets a clarifying question and no chart (correct behaviour, expectation set accordingly). The chart demo is s1.
+- Free-typed questions and the depot "Erklären lassen" button for markers other than 12. August 2026 have no cassette and show the new German note in replay mode.
+- Lesson from the session: an orphaned uvicorn worker from an earlier `make dev` kept the Qdrant folder locked and made three `search_kid` recordings fail (`already accessed by another instance`); check for stray Python processes before recording (README Windows note covers port 8000).

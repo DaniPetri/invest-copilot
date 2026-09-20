@@ -16,6 +16,10 @@ import { api } from '../lib/api'
 import type { SSEEvent, ToolName, UIBlock } from '../types/contracts'
 import { usePersona } from './persona'
 
+/** Replay mode (no API key) answers only recorded questions; the server's message names a hash and `make record`. */
+export const CASSETTE_MISS_TEXT =
+  'Diese Frage ist im Replay-Modus nicht aufgezeichnet. Nimm eine der Beispielfragen oder starte die App mit einem API-Schlüssel im Live-Modus.'
+
 export interface TraceEntry {
   seq: number
   /** ms since the request started, taken when the event arrived in the browser */
@@ -72,7 +76,7 @@ function applyEvent(m: ChatMessage, ev: SSEEvent): ChatMessage {
     case 'done':
       return { ...m, status: 'done', step: null }
     case 'error':
-      return { ...m, status: 'error', step: null, error: ev.data.message }
+      return { ...m, status: 'error', step: null, error: ev.data.code === 'cassette_miss' ? CASSETTE_MISS_TEXT : ev.data.message }
     default:
       return m
   }

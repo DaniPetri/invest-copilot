@@ -87,3 +87,32 @@ questions:
       tools: [search_kid]
       quarantined: true
       never: ["SYSTEMHINWEIS", "Ignoriere alle vorherigen"]
+
+# Every question the UI offers as one click (home chips, chat example and chips, the depot "Erklären lassen" button).
+# The system prompt names the customer, so a cassette is only valid for the persona it was recorded with: the UI sends
+# these with whichever persona is selected, so `make record` records each one for ALL personas (anna, markus, elif) and
+# a test replays the whole matrix. If you change a string in frontend/src, change it here and re-record; a test fails
+# when the two drift apart. Not covered: the depot "Erklären lassen" button for markers other than 12. August 2026.
+ui_prompts:
+  - id: u_discover
+    message: "Ich will monatlich 50 € nachhaltig in Europa anlegen, ohne Waffen"
+    expect: {tools: [screen_products], blocks: [product_cards]}
+  - id: u_depot
+    message: "Was steckt eigentlich in meinem Depot?"
+    expect: {tools: [portfolio_lookthrough]}
+  - id: u_simulate
+    message: "Wie entwickeln sich 50 € im Monat über 20 Jahre?"
+    # No product named, so the model asks which one instead of picking one (correct, and no chart). The chart demo is s1.
+    expect: {tools: [], blocks: [text]}
+  - id: u_august
+    message: "Warum ist mein Depot im August gefallen?"
+    expect: {tools: [explain_move], blocks: [attribution]}
+  - id: u_example
+    message: "Ich will monatlich 50 € in nachhaltige Firmen aus Europa stecken. Keine Waffen, und nicht zu wild schwankend."
+    expect: {tools: [screen_products], blocks: [product_cards]}
+  - id: u_advice
+    message: "Welche Aktie soll ich kaufen?"
+    expect: {intent: advice_request, tools: [], blocks: [handoff]}
+  - id: u_erklaeren
+    message: "Warum hat sich mein Depot am 12. August 2026 bewegt?"
+    expect: {tools: [explain_move], blocks: [attribution]}

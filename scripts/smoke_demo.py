@@ -27,6 +27,16 @@ def load_questions() -> list[dict[str, Any]]:
     return yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))["questions"]
 
 
+PERSONAS = ("anna", "markus", "elif")
+
+
+def load_ui_matrix() -> list[dict[str, Any]]:
+    """Every one-click UI question (`ui_prompts`) as every persona: the cassette is persona-specific (the system
+    prompt names the customer), and the UI sends the question with whichever persona is selected."""
+    prompts = yaml.safe_load(QUESTIONS.read_text(encoding="utf-8"))["ui_prompts"]
+    return [{**p, "id": f"{p['id']}/{c}", "customer_id": c, "category": "ui"} for p in prompts for c in PERSONAS]
+
+
 def parse_sse(lines) -> list[Event]:
     """`event:` / `data:` lines to (event, data) pairs; comments and pings are skipped."""
     events: list[Event] = []
@@ -133,6 +143,7 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--base", default="http://localhost:8000")
     ap.add_argument("--mode", default="replay", help="LLM mode every trace must report; '' disables the check")
+    ap.add_argument("--ui", action="store_true", help="run every one-click UI question as every persona instead")
     args = ap.parse_args(argv)
 
     try:
@@ -144,7 +155,8 @@ def main(argv: list[str]) -> int:
     print(f"API {args.base}: llm_mode={health['llm_mode']} has_api_key={health['has_api_key']}")
 
     failed = 0
-    for q in load_questions():
+    questions = load_ui_matrix() if args.ui else load_questions()
+    for q in questions:
         t0 = time.perf_counter()
         try:
             events = ask(args.base, q["customer_id"], q["message"])
@@ -158,8 +170,9 @@ def main(argv: list[str]) -> int:
         print(f"       {q['message']}")
         for p in problems:
             print(f"       - {p}")
-    total = len(load_questions())
-    print(f"\n{total - failed}/{total} demo questions passed")
+    total = len(questions)
+    what = "UI question x persona combinations" if args.ui else "demo questions"
+    print(f"\n{total - failed}/{total} {what} passed")
     return 1 if failed else 0
 
 

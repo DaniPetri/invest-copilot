@@ -59,7 +59,9 @@ Open <http://localhost:5173>, pick a persona on the Übersicht, go to Chat and a
 
 The first `make ingest` downloads the embedding model (about 220 MB) into `~/.cache/invest-copilot/fastembed` (override with `MODEL_CACHE_DIR`). Run `make ingest` again after every `make data`, because `make data` wipes `data/generated/`.
 
-Only questions that have a cassette can be answered in replay mode. Anything else fails with a `cassette_miss` error that tells you to run `make record`; it never silently falls back to a live call.
+Only questions that have a cassette can be answered in replay mode. Anything else fails with a `cassette_miss` error (in the chat: "Diese Frage ist im Replay-Modus nicht aufgezeichnet"); it never silently falls back to a live call.
+
+A cassette belongs to one persona, because the system prompt names the customer. The 8 demo questions in `scripts/demo_questions.yaml` are recorded for the persona listed there. Every question the UI offers as one click (home chips, chat example and chips, the depot "Erklären lassen" button for 12. August 2026) is recorded for **all three personas** (`ui_prompts` in the same file), so it works whichever persona is selected; a test fails if a string in the UI drifts from that list. Free-typed questions and other depot markers are not recorded. To record more, add them to the YAML and run `make record` with a key. Note that the simulate chip ("Wie entwickeln sich 50 € im Monat über 20 Jahre?") names no product, so the answer asks which product you mean; the chart demo is the s1 question ("… im Welt ETF …").
 
 ### Live mode (with an API key)
 

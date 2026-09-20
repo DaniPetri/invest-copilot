@@ -1,0 +1,2 @@
+{"first_user": "Was steckt eigentlich in meinem Depot?", "hash": "21dc65305573203318972d8c10004737702203bdaf8f60c28f050d4a264d935d", "kind": "meta", "label": "orchestrator", "model": "claude-sonnet-5", "n_messages": 3, "parts": {"max_tokens": "bfa0ec8bdf29", "messages": "0ab71b8c519e", "model": "30c1f92362fb", "system": "776f98d9fd28", "thinking": "d12700b52885", "tools": "773488d744c7"}}
+{"content": [{"text": "BEREIT", "type": "text"}], "input_tokens": 5082, "kind": "response", "latency_ms": 3000, "model": "claude-sonnet-5", "output_tokens": 7, "stop_reason": "end_turn"}
