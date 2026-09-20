@@ -17,8 +17,30 @@ def _ui_blocks(name):
     return next(x["data"]["blocks"] for x in _lines(FIXTURE_DIR / name) if x["event"] == "ui")
 
 
-def test_three_fixture_streams_exist():
-    assert [f.name for f in FILES] == ["advice_refusal.jsonl", "depot_august.jsonl", "discover.jsonl"]
+def test_the_five_fixture_streams_exist():
+    assert [f.name for f in FILES] == [
+        "advice_refusal.jsonl",
+        "depot_august.jsonl",
+        "discover.jsonl",
+        "roentgen.jsonl",
+        "simulate.jsonl",
+    ]
+
+
+def test_the_streams_together_cover_all_eleven_block_types():
+    kinds = {b["type"] for f in FILES for b in _ui_blocks(f.name)}
+    assert kinds == {
+        "text", "product_cards", "risk_meter", "fan_chart", "exposure_bars", "overlap_matrix",
+        "attribution", "cost_breakdown", "suitability", "handoff", "citations",
+    }  # fmt: skip
+
+
+def test_simulate_and_roentgen_streams_show_their_tools():
+    sim = {x["data"]["name"] for x in _lines(FIXTURE_DIR / "simulate.jsonl") if x["event"] == "tool_start"}
+    assert sim == {"simulate_savings_plan", "cost_projection", "suitability_check", "search_kid"}
+    assert any(x["event"] == "retrieval" for x in _lines(FIXTURE_DIR / "simulate.jsonl"))
+    roentgen = [x for x in _lines(FIXTURE_DIR / "roentgen.jsonl") if x["event"] == "tool_start"]
+    assert [x["data"]["name"] for x in roentgen] == ["portfolio_lookthrough"]
 
 
 @pytest.mark.parametrize("path", FILES, ids=lambda p: p.name)

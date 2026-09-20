@@ -346,3 +346,164 @@ export const SSE_EVENT_NAMES = [
 
 /** One line of a recorded stream in frontend/fixtures/sse/*.jsonl */
 export type FixtureLine = SSEEvent & { delay_ms: number }
+
+// ── portfolio view: GET /api/customers/{id}/portfolio ───────────────────────
+
+export interface SeriesPoint {
+  date: string
+  value_eur: number
+}
+
+export interface PortfolioPosition {
+  product_id: string
+  name: string
+  asset_class: AssetClass
+  sri: number
+  units: number
+  value_eur: number
+  weight: number
+}
+
+export interface EventMarker {
+  event: MarketEvent
+  change_eur: number
+  /** Portfolio move over the event window, in percent */
+  change_pct: number
+}
+
+export interface PortfolioView {
+  customer_id: string
+  as_of: string
+  total_value_eur: number
+  cash_eur: number
+  change_3m_eur: number
+  change_3m_pct: number
+  /** Daily depot value, last 12 months */
+  series: SeriesPoint[]
+  positions: PortfolioPosition[]
+  events: EventMarker[]
+}
+
+// ── tool results (POST /api/tools/{name}) ───────────────────────────────────
+
+export interface ToolResult<P = unknown> {
+  result_id: string
+  name: ToolName
+  ok: boolean
+  payload: P
+  summary: string
+}
+
+export interface ExplainMovePayload {
+  customer_id: string
+  start: string
+  end: string
+  start_value_eur: number
+  end_value_eur: number
+  change_eur: number
+  change_pct: number
+  rows: AttributionRow[]
+  events: MarketEvent[]
+}
+
+export interface LookthroughPayload {
+  customer_id: string
+  n_products: number
+  n_companies: number
+  by_company: ExposureRow[]
+  by_sector: ExposureRow[]
+  by_country: ExposureRow[]
+  overlaps: { product_a: string; product_b: string; overlap: number }[]
+  hhi: number
+  top10_share: number
+  flags: string[]
+}
+
+export interface SimulatePayload {
+  years: number[]
+  p5: number[]
+  p25: number[]
+  p50: number[]
+  p75: number[]
+  p95: number[]
+  contributions: number[]
+  prob_below_contributions: number
+  total_contributions: number
+  total_costs: number
+  kest_estimate: number
+  n_paths: number
+  seed: number
+}
+
+export interface CostProjectionPayload {
+  product_id: string
+  total_contributions_eur: number
+  by_year: { year: number; ter_eur: number; fees_eur: number; entry_eur: number; cumulative_eur: number }[]
+  rows: CostRow[]
+  total_eur: number
+  total_pct_of_contributions: number
+}
+
+export interface SuitabilityPayload {
+  customer_id: string
+  product_id: string
+  verdict: Verdict
+  reasons: SuitabilityReason[]
+}
+
+// ── evals: GET /api/evals/latest ────────────────────────────────────────────
+
+export interface EvalGate {
+  name: string
+  metric: string
+  value: number
+  threshold: number
+  passed: boolean
+  sample: boolean
+}
+
+export interface RetrievalRow {
+  mode: 'bm25' | 'dense' | 'hybrid' | 'hybrid_rerank'
+  recall_at_1: number
+  recall_at_5: number
+  mrr_at_10: number
+  ndcg_at_5: number
+  p50_ms: number
+  n_questions: number
+}
+
+export interface JudgeScore {
+  mean: number
+  ci_low: number
+  ci_high: number
+}
+
+export interface EvalReport {
+  generated_at: string
+  mode: 'live' | 'replay' | 'fixture'
+  gates: EvalGate[]
+  retrieval: { sample: boolean; rows: RetrievalRow[] }
+  router: {
+    sample: boolean
+    n_dev: number
+    n_blind: number
+    accuracy_dev: number
+    accuracy_blind: number
+    macro_f1: number
+    advice_recall: number
+    false_alarm_rate: number
+  }
+  answers: {
+    sample: boolean
+    n: number
+    citation_validity: number
+    numeric_grounding: number
+    advice_language_absent: number
+    faithfulness: JudgeScore
+    completeness: JudgeScore
+    clarity: JudgeScore
+    boundary: JudgeScore
+  }
+  redteam: { sample: boolean; rows: { category: string; attacks: number; successes: number }[] }
+  judge_calibration: { sample: boolean; n: number; kappa: number | null }
+}

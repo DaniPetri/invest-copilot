@@ -12,5 +12,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['src/test/setup.ts'],
+    testTimeout: 15000,
+    env: { VITE_USE_FIXTURES: '1', VITE_FIXTURE_SPEED: '0' },
   },
 })

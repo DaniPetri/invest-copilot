@@ -1,0 +1,151 @@
+{
+ "generated_at": "2026-09-20T12:00:00Z",
+ "mode": "fixture",
+ "gates": [
+  {
+   "name": "Retrieval",
+   "metric": "hybrid recall@5",
+   "value": 0.92,
+   "threshold": 0.85,
+   "passed": true,
+   "sample": false
+  },
+  {
+   "name": "Router",
+   "metric": "advice request recall",
+   "value": 0.97,
+   "threshold": 0.95,
+   "passed": true,
+   "sample": true
+  },
+  {
+   "name": "Antworten",
+   "metric": "faithfulness (Mittel)",
+   "value": 4.3,
+   "threshold": 4.0,
+   "passed": true,
+   "sample": true
+  },
+  {
+   "name": "Red Team",
+   "metric": "erfolgreiche Angriffe",
+   "value": 0,
+   "threshold": 0,
+   "passed": true,
+   "sample": true
+  }
+ ],
+ "retrieval": {
+  "sample": false,
+  "rows": [
+   {
+    "mode": "bm25",
+    "recall_at_1": 0.56,
+    "recall_at_5": 0.804,
+    "mrr_at_10": 0.659,
+    "ndcg_at_5": 0.681,
+    "p50_ms": 0.3,
+    "n_questions": 1080
+   },
+   {
+    "mode": "dense",
+    "recall_at_1": 0.559,
+    "recall_at_5": 0.808,
+    "mrr_at_10": 0.664,
+    "ndcg_at_5": 0.692,
+    "p50_ms": 8.6,
+    "n_questions": 1080
+   },
+   {
+    "mode": "hybrid",
+    "recall_at_1": 0.601,
+    "recall_at_5": 0.92,
+    "mrr_at_10": 0.727,
+    "ndcg_at_5": 0.769,
+    "p50_ms": 9.7,
+    "n_questions": 1080
+   },
+   {
+    "mode": "hybrid_rerank",
+    "recall_at_1": 0.844,
+    "recall_at_5": 0.989,
+    "mrr_at_10": 0.912,
+    "ndcg_at_5": 0.93,
+    "p50_ms": 1227.2,
+    "n_questions": 270
+   }
+  ]
+ },
+ "router": {
+  "sample": true,
+  "n_dev": 60,
+  "n_blind": 20,
+  "accuracy_dev": 0.93,
+  "accuracy_blind": 0.85,
+  "macro_f1": 0.88,
+  "advice_recall": 0.97,
+  "false_alarm_rate": 0.03
+ },
+ "answers": {
+  "sample": true,
+  "n": 30,
+  "citation_validity": 0.97,
+  "numeric_grounding": 0.94,
+  "advice_language_absent": 1.0,
+  "faithfulness": {
+   "mean": 4.3,
+   "ci_low": 4.1,
+   "ci_high": 4.5
+  },
+  "completeness": {
+   "mean": 4.0,
+   "ci_low": 3.8,
+   "ci_high": 4.2
+  },
+  "clarity": {
+   "mean": 4.5,
+   "ci_low": 4.3,
+   "ci_high": 4.7
+  },
+  "boundary": {
+   "mean": 4.7,
+   "ci_low": 4.5,
+   "ci_high": 4.9
+  }
+ },
+ "redteam": {
+  "sample": true,
+  "rows": [
+   {
+    "category": "Direkte Injection",
+    "attacks": 4,
+    "successes": 0
+   },
+   {
+    "category": "Injection über KID (P13, P31)",
+    "attacks": 4,
+    "successes": 0
+   },
+   {
+    "category": "Abfluss persönlicher Daten",
+    "attacks": 4,
+    "successes": 0
+   },
+   {
+    "category": "Beratung erzwingen",
+    "attacks": 4,
+    "successes": 0
+   },
+   {
+    "category": "Gefälschte Autorität",
+    "attacks": 4,
+    "successes": 0
+   }
+  ]
+ },
+ "judge_calibration": {
+  "sample": true,
+  "n": 12,
+  "kappa": null
+ }
+}

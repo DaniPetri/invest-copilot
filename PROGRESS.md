@@ -159,3 +159,39 @@ uv run python -m app.mcp_server        # stdio MCP server (needs data/generated 
 **Re-verified**: M2 tests (event visibility, determinism, hash), M3 tests and the ablation (identical: hybrid recall@5 0.920, recall@1 0.601; only numbers inside KID tables moved, so retrieval ranks the same), M4 tests; 270 backend and 23 frontend tests green. New tests: `pin_market_window` (sets the total, keeps the drift), August 2026 is a decline for the market and for Markus's three products, and `explain_move` for Markus in August shows a loss with all rows negative.
 **Fixture**: `depot_august.jsonl` now carries the real `explain_move` numbers and summary instead of placeholders (the `discover` fixture already used real IDs from M2; its numbers come from `screen_products`).
 **Note**: regenerate and re-index after pulling this change: `make data && make ingest`.
+
+## M5 · Frontend in fixture mode — done
+
+**Done**
+- **App shell** (`components/AppLayout.tsx`): below 1100 px the app fills the screen like a phone app; from 1100 px a 390 px phone frame with the "Unter der Haube" panel beside it (design/11), brand bar, `Demo | Auswertung`. On narrow screens the panel opens as a bottom sheet from the "Unter der Haube: strukturierte Ausgabe" button. Bottom navigation: Übersicht, Chat, Depot, Simulator, Evals. Persona switcher (Anna, Markus, Elif) on the Übersicht, remembered in `localStorage`.
+- **`lib/sse.ts`**: POST + `ReadableStream` parser (`SSEParser`, `readSSE`, `toEvent`, `postSSE`). Handles chunks split anywhere (also inside UTF-8 characters), CRLF/CR, multi-line data, comments, unterminated last event; malformed JSON, unknown events, HTTP errors, network drops and aborts become `error` events or end quietly, never a throw. `lib/api.ts`: one client, every call answered from fixtures when `VITE_USE_FIXTURES=1`.
+- **Blocks** (`src/blocks/`, one component per type, `registry.tsx` skips unknown types): text, product_cards, risk_meter, fan_chart, exposure_bars, overlap_matrix, attribution, cost_breakdown, suitability, handoff, citations. Recharts for fan chart, attribution and exposure bars. AI surfaces are purple with the KI label and "BIB P07 · S. 2" chips; deterministic results are neutral cards.
+- **Screens**: `/` (value, 3-month curve, positions, ask input), `/chat` (streaming text, blocks, source chips, history newest first), `/depot` (value chart with event markers, tapping one calls `explain_move` and shows the attribution, "Erklären lassen" hands the question to the chat, Depot-Röntgen with overlap matrix and Länder/Branchen/Top-Titel), `/produkt/:id` (KID summary, SRI scale, cost calculator as a direct tool call, suitability for the current persona), `/simulator` (rate, duration, mix; every change is a direct simulation call), `/evals`.
+- **Trace panel**: numbered steps built live from the events (router decision, tool calls with arguments, retrieval hits with scores and quarantine flags, answer, guardrail checks, tokens and cost), timing bars, Ablauf/JSON tabs, "Replay-Modus" badge.
+- **Contracts, changed together** (CLAUDE.md rule): new `PortfolioView`, `PortfolioPosition`, `EventMarker`, `SeriesPoint` (`schemas/portfolio.py`) and `EvalReport` (`schemas/evals.py`), exported to `contracts/`, mirrored in `contracts.ts`, and used by the fixtures. `app/portfolio_view.py` builds the view from the real tools (it becomes `GET /api/customers/{id}/portfolio` in M8).
+- **Fixtures** (`scripts/build_frontend_fixtures.py`, `make fixtures`, no hand-typed numbers): `fixtures/api/{customers,products,portfolios,tools,evals}.json` (tools.json is 417 KB: 48 simulations, 160 cost projections, 120 suitability checks, 9 event explanations, 3 look-throughs) and two new SSE streams (`simulate`, `roentgen`) next to the three from M1. Together the five streams contain all 11 block types.
+- Design fidelity: the app was run in fixture mode and screenshotted with headless Chrome at 390x844 and 1440x900 (DevTools protocol, exact viewport) and compared with design 01, 02, 03, 04, 06 and 11: blue band with the first card overlapping it by 40 px, Onest, 20 px cards, purple for everything AI. Two polish rounds came out of that (wrapping labels, a duplicated cost heading, a missing "heute" tick).
+
+**How to verify**
+```
+uv run python scripts/tasks.py test            # backend 291 passed, frontend 145 passed
+cd frontend && npm run build
+cd frontend && npm run dev                     # fixture mode is the default in dev (frontend/.env.development: VITE_USE_FIXTURES=1)
+```
+Open http://localhost:5173, click "Beispiel abspielen", and watch the trace panel fill on the right (at >= 1100 px wide). Rebuild fixtures after `make data && make ingest` with `make fixtures`.
+
+**Tests added**: SSE parser (22), block registry (every block of every fixture stream renders, unknown types are ignored, per-block content), session reducer (9), trace steps (8), formatting, event windows, fixture coverage for every button the UI offers (lib, 23), all API fixtures validated against the exported schemas with the hand-written validator (contracts, 6 new), and App tests: the chat screen rendering a full fixture stream with the trace next to it, the advice hand-off, the August story with real numbers, `?q=` sent once, and a smoke test of every screen. Backend: `test_portfolio_view`-style tests and fixture tests (21 new).
+
+**Known gaps / decisions**
+- Fixture mode maps every question to one of five recorded conversations by keyword (`pickChatFixture`), so an unrelated question still gets one of those answers. It is a replay, and the trace panel says "Replay-Modus". The recordings are for fixed personas (August and Röntgen: Markus, simulate: Anna) whatever persona is active.
+- "Das habe ich verstanden" chips are static. Toggling a filter would need a new search, which fixture mode cannot do; the copy no longer promises it.
+- `/evals`: only the retrieval numbers are measured (the M3 ablation; the reranker row is the 270-question sample). Router, answers, red team and judge are illustrative and shown as "Beispielwert" until M7; the screen says so in a banner and per row.
+- Links to KID PDFs (`/api/kid/P07.pdf#page=2`) need the backend and 404 in fixture mode. `GET /api/customers`, `/api/customers/{id}/portfolio`, `/api/products(/{id})`, `/api/kid/{id}.pdf` and `/api/evals/latest` are not implemented yet: M8 (the fixture shapes are the contract).
+- Not built: design 07 (profile dialog), 08 (Invest-Coach), 09 as its own sheet (its layout is used for the hand-off block) and the Venn of design/05 (an overlap matrix shows the same numbers). The top bar has no "So funktioniert's" page.
+- Product page "Größte Positionen" lists the top 10 holdings kept in the fixture (weights do not sum to 1 there); the full list comes from the API later.
+- The KID "Quelle: S. n" badges link to the page; there is no in-app PDF viewer.
+- Production bundle: 736 KB (218 KB gzipped), plus the fixtures as a separate 383 KB chunk that only loads in fixture mode; no route-level code splitting yet.
+- No linter is configured for the frontend (SPEC lists none); `tsc -b` runs as part of `npm run build`.
+
+**Next step**: M6, the agent. Start with the live spike from the plan (strict tool schemas and structured outputs against the real API, docs first), then `llm.py`, router, orchestrator, guardrails, tracing and `POST /api/chat`. The SSE event shapes the frontend already consumes are the contract.
+

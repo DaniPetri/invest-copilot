@@ -1,0 +1,404 @@
+{
+  "$defs": {
+    "AnswersSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "advice_language_absent": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Advice Language Absent",
+          "type": "number"
+        },
+        "boundary": {
+          "$ref": "#/$defs/JudgeScore"
+        },
+        "citation_validity": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Citation Validity",
+          "type": "number"
+        },
+        "clarity": {
+          "$ref": "#/$defs/JudgeScore"
+        },
+        "completeness": {
+          "$ref": "#/$defs/JudgeScore"
+        },
+        "faithfulness": {
+          "$ref": "#/$defs/JudgeScore"
+        },
+        "n": {
+          "title": "N",
+          "type": "integer"
+        },
+        "numeric_grounding": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Numeric Grounding",
+          "type": "number"
+        },
+        "sample": {
+          "default": false,
+          "title": "Sample",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "n",
+        "citation_validity",
+        "numeric_grounding",
+        "advice_language_absent",
+        "faithfulness",
+        "completeness",
+        "clarity",
+        "boundary"
+      ],
+      "title": "AnswersSuite",
+      "type": "object"
+    },
+    "CalibrationSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "kappa": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Cohen's kappa between judge and human; null until the human scores exist",
+          "title": "Kappa"
+        },
+        "n": {
+          "title": "N",
+          "type": "integer"
+        },
+        "sample": {
+          "default": false,
+          "title": "Sample",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "n",
+        "kappa"
+      ],
+      "title": "CalibrationSuite",
+      "type": "object"
+    },
+    "EvalReport": {
+      "additionalProperties": false,
+      "properties": {
+        "answers": {
+          "$ref": "#/$defs/AnswersSuite"
+        },
+        "gates": {
+          "items": {
+            "$ref": "#/$defs/Gate"
+          },
+          "title": "Gates",
+          "type": "array"
+        },
+        "generated_at": {
+          "title": "Generated At",
+          "type": "string"
+        },
+        "judge_calibration": {
+          "$ref": "#/$defs/CalibrationSuite"
+        },
+        "mode": {
+          "enum": [
+            "live",
+            "replay",
+            "fixture"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "redteam": {
+          "$ref": "#/$defs/RedteamSuite"
+        },
+        "retrieval": {
+          "$ref": "#/$defs/RetrievalSuite"
+        },
+        "router": {
+          "$ref": "#/$defs/RouterSuite"
+        }
+      },
+      "required": [
+        "generated_at",
+        "mode",
+        "gates",
+        "retrieval",
+        "router",
+        "answers",
+        "redteam",
+        "judge_calibration"
+      ],
+      "title": "EvalReport",
+      "type": "object"
+    },
+    "Gate": {
+      "additionalProperties": false,
+      "properties": {
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "sample": {
+          "default": false,
+          "title": "Sample",
+          "type": "boolean"
+        },
+        "threshold": {
+          "title": "Threshold",
+          "type": "number"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "metric",
+        "value",
+        "threshold",
+        "passed"
+      ],
+      "title": "Gate",
+      "type": "object"
+    },
+    "JudgeScore": {
+      "additionalProperties": false,
+      "properties": {
+        "ci_high": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Ci High",
+          "type": "number"
+        },
+        "ci_low": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Ci Low",
+          "type": "number"
+        },
+        "mean": {
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Mean",
+          "type": "number"
+        }
+      },
+      "required": [
+        "mean",
+        "ci_low",
+        "ci_high"
+      ],
+      "title": "JudgeScore",
+      "type": "object"
+    },
+    "RedteamRow": {
+      "additionalProperties": false,
+      "properties": {
+        "attacks": {
+          "minimum": 0,
+          "title": "Attacks",
+          "type": "integer"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "successes": {
+          "minimum": 0,
+          "title": "Successes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "category",
+        "attacks",
+        "successes"
+      ],
+      "title": "RedteamRow",
+      "type": "object"
+    },
+    "RedteamSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/RedteamRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "sample": {
+          "default": false,
+          "title": "Sample",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "RedteamSuite",
+      "type": "object"
+    },
+    "RetrievalRow": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "bm25",
+            "dense",
+            "hybrid",
+            "hybrid_rerank"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "mrr_at_10": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Mrr At 10",
+          "type": "number"
+        },
+        "n_questions": {
+          "minimum": 1,
+          "title": "N Questions",
+          "type": "integer"
+        },
+        "ndcg_at_5": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Ndcg At 5",
+          "type": "number"
+        },
+        "p50_ms": {
+          "minimum": 0,
+          "title": "P50 Ms",
+          "type": "number"
+        },
+        "recall_at_1": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Recall At 1",
+          "type": "number"
+        },
+        "recall_at_5": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Recall At 5",
+          "type": "number"
+        }
+      },
+      "required": [
+        "mode",
+        "recall_at_1",
+        "recall_at_5",
+        "mrr_at_10",
+        "ndcg_at_5",
+        "p50_ms",
+        "n_questions"
+      ],
+      "title": "RetrievalRow",
+      "type": "object"
+    },
+    "RetrievalSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/RetrievalRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "sample": {
+          "default": false,
+          "title": "Sample",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "RetrievalSuite",
+      "type": "object"
+    },
+    "RouterSuite": {
+      "additionalProperties": false,
+      "properties": {
+        "accuracy_blind": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Accuracy Blind",
+          "type": "number"
+        },
+        "accuracy_dev": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Accuracy Dev",
+          "type": "number"
+        },
+        "advice_recall": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Advice Recall",
+          "type": "number"
+        },
+        "false_alarm_rate": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "False Alarm Rate",
+          "type": "number"
+        },
+        "macro_f1": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Macro F1",
+          "type": "number"
+        },
+        "n_blind": {
+          "title": "N Blind",
+          "type": "integer"
+        },
+        "n_dev": {
+          "title": "N Dev",
+          "type": "integer"
+        },
+        "sample": {
+          "default": false,
+          "title": "Sample",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "n_dev",
+        "n_blind",
+        "accuracy_dev",
+        "accuracy_blind",
+        "macro_f1",
+        "advice_recall",
+        "false_alarm_rate"
+      ],
+      "title": "RouterSuite",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "defs"
+}

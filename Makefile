@@ -2,7 +2,7 @@
 #   uv run python scripts/tasks.py <target>)
 PY ?= uv run python
 
-.PHONY: setup data ingest dev test eval eval-ci contracts record
+.PHONY: setup data ingest dev test eval eval-ci contracts record fixtures
 
-setup data ingest dev test eval eval-ci contracts record:
+setup data ingest dev test eval eval-ci contracts record fixtures:
 	$(PY) scripts/tasks.py $@

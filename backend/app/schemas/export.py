@@ -5,7 +5,8 @@ Files:
   ui_block.schema.json       root = discriminated union of UI blocks
   router_decision.schema.json
   products.schema.json       $defs: Product, Company, MarketEvent
-  portfolio.schema.json      $defs: Customer
+  portfolio.schema.json      $defs: Customer, PortfolioView (and their parts)
+  evals.schema.json          $defs: EvalReport
   tools.schema.json          $defs: <ToolName>Input / <ToolName>Output for every tool
 """
 
@@ -17,8 +18,9 @@ from pydantic import TypeAdapter
 from pydantic.json_schema import models_json_schema
 
 from ..config import REPO_ROOT
+from .evals import EvalReport
 from .events import RouterDecision, SSEEvent
-from .portfolio import Customer
+from .portfolio import Customer, PortfolioView
 from .products import Company, MarketEvent, Product
 from .tools import TOOL_MODELS
 from .ui import UIBlock
@@ -46,7 +48,8 @@ def export(out: Path) -> list[Path]:
         _write(out, "ui_block", TypeAdapter(UIBlock).json_schema()),
         _write(out, "router_decision", RouterDecision.model_json_schema()),
         _write(out, "products", _defs([Product, Company, MarketEvent])),
-        _write(out, "portfolio", _defs([Customer])),
+        _write(out, "portfolio", _defs([Customer, PortfolioView])),
+        _write(out, "evals", _defs([EvalReport])),
         _write(out, "tools", _defs(tool_models)),
     ]
 

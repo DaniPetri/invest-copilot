@@ -42,8 +42,14 @@ describe('contracts: drift between contracts.ts and the exported schemas', () =>
 })
 
 describe('contracts: fixture streams validate against the schemas', () => {
-  it('finds the three fixture streams', () => {
-    expect(fixtures.map((f) => f.file)).toEqual(['advice_refusal.jsonl', 'depot_august.jsonl', 'discover.jsonl'])
+  it('finds the five fixture streams', () => {
+    expect(fixtures.map((f) => f.file)).toEqual([
+      'advice_refusal.jsonl',
+      'depot_august.jsonl',
+      'discover.jsonl',
+      'roentgen.jsonl',
+      'simulate.jsonl',
+    ])
   })
 
   for (const { file, lines } of fixtures) {
@@ -104,5 +110,65 @@ describe('contracts: invalid input is rejected', () => {
   it('rejects out-of-range SRI', () => {
     expect(validate(uiBlock, { type: 'risk_meter', sri: 8 })).not.toEqual([])
     expect(validate(uiBlock, { type: 'risk_meter', sri: 4 })).toEqual([])
+  })
+})
+
+
+// ── the API fixtures (frontend/fixtures/api) against the exported schemas ───
+
+const apiDir = fileURLToPath(new URL('../../fixtures/api/', import.meta.url))
+const loadApi = (name: string) => JSON.parse(readFileSync(apiDir + name, 'utf-8'))
+const products = load('products.schema.json')
+const portfolio = load('portfolio.schema.json')
+const evals = load('evals.schema.json')
+
+describe('contracts: API fixtures validate against the schemas', () => {
+  it('customers.json is a list of Customer', () => {
+    const customers = loadApi('customers.json') as unknown[]
+    expect(customers).toHaveLength(3)
+    customers.forEach((c, i) => expect(validate({ $ref: '#/$defs/Customer' }, c, portfolio), `customer ${i}`).toEqual([]))
+  })
+
+  it('products.json is a list of 40 Product', () => {
+    const list = loadApi('products.json') as unknown[]
+    expect(list).toHaveLength(40)
+    list.forEach((p, i) => expect(validate({ $ref: '#/$defs/Product' }, p, products), `product ${i}`).toEqual([]))
+  })
+
+  it('portfolios.json maps every persona to a PortfolioView', () => {
+    const views = loadApi('portfolios.json') as Record<string, unknown>
+    expect(Object.keys(views).sort()).toEqual(['anna', 'elif', 'markus'])
+    for (const [id, v] of Object.entries(views)) {
+      expect(validate({ $ref: '#/$defs/PortfolioView' }, v, portfolio), id).toEqual([])
+    }
+  })
+
+  it('every tools.json entry is a ToolResult whose payload matches its output schema', () => {
+    const outputs: Record<string, string> = {
+      explain: 'ExplainMoveOutput',
+      lookthrough: 'LookthroughOutput',
+      simulate: 'SimulateOutput',
+      cost: 'CostProjectionOutput',
+      suitability: 'SuitabilityOutput',
+    }
+    const results = loadApi('tools.json') as Record<string, { payload: unknown; ok: boolean; result_id: string }>
+    const seen = new Set<string>()
+    for (const [key, result] of Object.entries(results)) {
+      const kind = key.split('|')[0]
+      seen.add(kind)
+      expect(result.ok && result.result_id === 'r1', key).toBe(true)
+      expect(validate({ $ref: `#/$defs/${outputs[kind]}` }, result.payload, tools), key).toEqual([])
+    }
+    expect([...seen].sort()).toEqual(Object.keys(outputs).sort())
+  })
+
+  it('evals.json is an EvalReport', () => {
+    expect(validate({ $ref: '#/$defs/EvalReport' }, loadApi('evals.json'), evals)).toEqual([])
+  })
+
+  it('a bad payload is rejected (the check has teeth)', () => {
+    const view = structuredClone(loadApi('portfolios.json').markus)
+    view.positions[0].sri = 9
+    expect(validate({ $ref: '#/$defs/PortfolioView' }, view, portfolio)).not.toEqual([])
   })
 })

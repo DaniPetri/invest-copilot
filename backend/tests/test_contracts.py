@@ -6,7 +6,7 @@ from app.schemas.export import export
 
 from .conftest import CONTRACT_DIR
 
-EXPECTED = {"sse_event", "ui_block", "router_decision", "products", "portfolio", "tools"}
+EXPECTED = {"sse_event", "ui_block", "router_decision", "products", "portfolio", "tools", "evals"}
 
 
 def test_contract_files_exist_and_are_current(tmp_path):

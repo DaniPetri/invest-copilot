@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import Field
 
 from .base import Contract
+from .products import AssetClass, MarketEvent
 
 Level = Literal["keine", "basis", "erweitert"]
 LossTolerance = Literal["niedrig", "mittel", "hoch"]
@@ -46,3 +47,41 @@ class Customer(Contract):
     positions: list[Position]
     cash_eur: float
     transactions: list[Transaction]
+
+
+# ── GET /api/customers/{id}/portfolio ───────────────────────────────────────
+
+
+class SeriesPoint(Contract):
+    date: date
+    value_eur: float
+
+
+class PortfolioPosition(Contract):
+    product_id: str
+    name: str
+    asset_class: AssetClass
+    sri: int = Field(ge=1, le=7)
+    units: float
+    value_eur: float
+    weight: float = Field(ge=0, le=1)
+
+
+class EventMarker(Contract):
+    """A ground-truth market event that touched the customer's holdings, with what it did to the depot."""
+
+    event: MarketEvent
+    change_eur: float
+    change_pct: float = Field(description="Portfolio move over the event window (day before to end of shock), in %")
+
+
+class PortfolioView(Contract):
+    customer_id: str
+    as_of: date
+    total_value_eur: float
+    cash_eur: float
+    change_3m_eur: float = Field(description="Market P&L over the last 3 months, excluding money paid in")
+    change_3m_pct: float
+    series: list[SeriesPoint] = Field(description="Daily depot value, last 12 months")
+    positions: list[PortfolioPosition]
+    events: list[EventMarker]

@@ -59,12 +59,15 @@ def ingest() -> int:
     return run(["uv", "run", "python", "-m", "app.rag.index"], BACKEND)
 
 
+def fixtures() -> int:
+    """Rebuild frontend/fixtures/api and the simulate/roentgen SSE streams from the real tools (needs data + ingest)."""
+    return run(["uv", "run", "python", "../scripts/build_frontend_fixtures.py"], BACKEND)
+
+
 def dev() -> int:
     """API on :8000 and web on :5173 together; Ctrl-C stops both."""
     procs = [
-        subprocess.Popen(
-            ["uv", "run", "uvicorn", "app.main:app", "--reload", "--port", "8000"], cwd=BACKEND
-        ),
+        subprocess.Popen(["uv", "run", "uvicorn", "app.main:app", "--reload", "--port", "8000"], cwd=BACKEND),
         subprocess.Popen(npm("run", "dev"), cwd=FRONTEND),
     ]
     print("API http://localhost:8000/api/health · Web http://localhost:5173", flush=True)
@@ -102,6 +105,7 @@ TARGETS: dict[str, Callable[[], int]] = {
     "eval": not_yet("eval", "M7"),
     "eval-ci": not_yet("eval-ci", "M7"),
     "contracts": contracts,
+    "fixtures": fixtures,
     "record": not_yet("record", "M8"),
 }
 

@@ -59,6 +59,203 @@
       "title": "Customer",
       "type": "object"
     },
+    "EventMarker": {
+      "additionalProperties": false,
+      "description": "A ground-truth market event that touched the customer's holdings, with what it did to the depot.",
+      "properties": {
+        "change_eur": {
+          "title": "Change Eur",
+          "type": "number"
+        },
+        "change_pct": {
+          "description": "Portfolio move over the event window (day before to end of shock), in %",
+          "title": "Change Pct",
+          "type": "number"
+        },
+        "event": {
+          "$ref": "#/$defs/MarketEvent"
+        }
+      },
+      "required": [
+        "event",
+        "change_eur",
+        "change_pct"
+      ],
+      "title": "EventMarker",
+      "type": "object"
+    },
+    "MarketEvent": {
+      "additionalProperties": false,
+      "description": "Ground truth for attribution: a dated shock to the whole market or to single sectors.",
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "duration_days": {
+          "minimum": 1,
+          "title": "Duration Days",
+          "type": "integer"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sectors": {
+          "description": "Empty list = whole market",
+          "items": {
+            "type": "string"
+          },
+          "title": "Sectors",
+          "type": "array"
+        },
+        "shock_pct": {
+          "title": "Shock Pct",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "name",
+        "description",
+        "sectors",
+        "shock_pct",
+        "duration_days"
+      ],
+      "title": "MarketEvent",
+      "type": "object"
+    },
+    "PortfolioPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_class": {
+          "enum": [
+            "equity_etf",
+            "equity_fund",
+            "bond_fund",
+            "mixed_fund",
+            "money_market"
+          ],
+          "title": "Asset Class",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "product_id": {
+          "title": "Product Id",
+          "type": "string"
+        },
+        "sri": {
+          "maximum": 7,
+          "minimum": 1,
+          "title": "Sri",
+          "type": "integer"
+        },
+        "units": {
+          "title": "Units",
+          "type": "number"
+        },
+        "value_eur": {
+          "title": "Value Eur",
+          "type": "number"
+        },
+        "weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "product_id",
+        "name",
+        "asset_class",
+        "sri",
+        "units",
+        "value_eur",
+        "weight"
+      ],
+      "title": "PortfolioPosition",
+      "type": "object"
+    },
+    "PortfolioView": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of": {
+          "format": "date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "cash_eur": {
+          "title": "Cash Eur",
+          "type": "number"
+        },
+        "change_3m_eur": {
+          "description": "Market P&L over the last 3 months, excluding money paid in",
+          "title": "Change 3M Eur",
+          "type": "number"
+        },
+        "change_3m_pct": {
+          "title": "Change 3M Pct",
+          "type": "number"
+        },
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/EventMarker"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "positions": {
+          "items": {
+            "$ref": "#/$defs/PortfolioPosition"
+          },
+          "title": "Positions",
+          "type": "array"
+        },
+        "series": {
+          "description": "Daily depot value, last 12 months",
+          "items": {
+            "$ref": "#/$defs/SeriesPoint"
+          },
+          "title": "Series",
+          "type": "array"
+        },
+        "total_value_eur": {
+          "title": "Total Value Eur",
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id",
+        "as_of",
+        "total_value_eur",
+        "cash_eur",
+        "change_3m_eur",
+        "change_3m_pct",
+        "series",
+        "positions",
+        "events"
+      ],
+      "title": "PortfolioView",
+      "type": "object"
+    },
     "Position": {
       "additionalProperties": false,
       "properties": {
@@ -169,6 +366,26 @@
         "sustainability_preference"
       ],
       "title": "Profile",
+      "type": "object"
+    },
+    "SeriesPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "value_eur": {
+          "title": "Value Eur",
+          "type": "number"
+        }
+      },
+      "required": [
+        "date",
+        "value_eur"
+      ],
+      "title": "SeriesPoint",
       "type": "object"
     },
     "Transaction": {
