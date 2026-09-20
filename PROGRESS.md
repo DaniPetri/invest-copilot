@@ -195,3 +195,50 @@ Open http://localhost:5173, click "Beispiel abspielen", and watch the trace pane
 
 **Next step**: M6, the agent. Start with the live spike from the plan (strict tool schemas and structured outputs against the real API, docs first), then `llm.py`, router, orchestrator, guardrails, tracing and `POST /api/chat`. The SSE event shapes the frontend already consumes are the contract.
 
+## M6 · Agent — done
+
+**Done**
+- `agent/llm.py`: `LLMClient` protocol, `AnthropicClient` (streaming + `get_final_message()`), `RecordingClient`, `ReplayClient`, `make_llm_client()` (`LLM_MODE=live|record|replay`, replay when there is no key). Cassette key = sha256 of the normalised request (only API fields, sorted keys, `toolu_` ids replaced by their order). A miss names the hash and, when a recording of the same conversation exists, which request part differs (`differs in: system`). Recording is idempotent (an existing cassette is served); `RECORD_REFRESH=1` re-records.
+- `agent/router.py`: Haiku with `output_config` structured output into `RouterDecision`, plus the policy table in code (`advice_request` intent or flag → refuse, `out_of_scope` → redirect, else orchestrate). Router outage falls back to a regex safety net and says so in the guardrail event.
+- `agent/orchestrator.py`: PII redaction, router, policy, tool loop (at most 6 rounds), final strict `render_ui`, hydration, guardrails, one repair round, safe fallback. Every event is validated against the SSE contract before it is emitted and stored. `agent/hydrate.py` fills reference blocks from stored results (wrong-kind results, unknown IDs and unknown block types are rejected, all problems reported together). `agent/ui.py` holds the model-facing schema, `agent/prompts.py` the prompts and the fixed German answers.
+- `guardrails/`: `pii` (IBAN, e-mail, phone; ISINs and dates are not touched), `advice`, `citations`, `numbers` (German formats, fraction↔percent, rounding, list counts, dates, user's own numbers), `pipeline` (emits `pii`, `router_flags`, `quarantine`, `citations`, `numeric_grounding`, `advice_language`, `ai_label`, and `repair`/`fallback` when they happen).
+- `tracing/`: SQLite store (`data/traces.sqlite`, gitignored, only the redacted message is stored), `TraceRecorder`, per-call `usage` and `done` cost from `PRICE_TABLE_EUR_PER_MTOK`.
+- API: `POST /api/chat` (sse-starlette), `GET /api/traces/{id}`. Contracts changed together (`ChatRequest`, `TraceRecord` in `schemas/events.py`, `contracts.ts`, `contracts/api.schema.json`); a client that disconnects leaves a trace with status `cancelled`.
+- Price table checked against platform.claude.com (Haiku 4.5 $1/$5, Sonnet 5 $2/$10, Opus 5 $5/$25 per MTok) at an assumed 0.92 EUR/USD. The old Sonnet 5 placeholder was Sonnet 4.6 pricing.
+
+**Live spike findings (they shaped the design)**
+1. Eight strict schemas in one request fail: `The compiled grammar is too large`. Each tool plus `render_ui` works, and all seven tools alone work. So the final step is its own request that offers only `render_ui` (strict) and forces it with `tool_choice`. The API accepts history `tool_use` blocks for tools missing from that request.
+2. `transform_schema` turns `const` into a description, so `Literal["text"]` would not be enforced. `strict_input_schema` now converts `const` to a one-value `enum` first (tested).
+3. `thinking` is off for router and orchestrator: the default adaptive thinking spent 584 hidden output tokens on a one-word turn (1.6 s vs 7.4 s without).
+4. Haiku 4.5 structured output and Sonnet 5 forced `tool_choice` both work.
+
+**How to verify**
+```
+uv run python scripts/tasks.py test        # backend 402 passed, frontend 145 passed
+cd backend && uv run pytest tests/test_agent.py tests/test_guardrails.py tests/test_llm_clients.py tests/test_chat_api.py -q
+cd backend && LLM_MODE=live uv run uvicorn app.main:app --port 8000     # needs ANTHROPIC_API_KEY in .env
+curl -N -X POST localhost:8000/api/chat -H "content-type: application/json" -d '{"customer_id":"markus","message":"Warum ist mein Depot im August gefallen?"}'
+curl localhost:8000/api/traces/<trace_id>
+```
+New tests (111): scripted fake LLM (`tests/fakes.py`, no network) for event order, hydration, hallucinated number flagged (and repaired in `fail` mode), citation to an unretrieved chunk fails and repairs, second failure gives the fallback, P13 and P31 injection text never in any request to the model (and flagged in `retrieval` + `quarantine`), advice request gives a handoff with no tool call and one LLM call, PII redacted before every LLM call and never stored, unknown block rejected, wrong result kind rejected, tool round cap, cost from the price table, replay hit/miss, hash normalisation, `LLM_MODE` selection, SSE over HTTP, traces, cancellation. I broke quarantine, the number guard and the advice check on purpose: the matching tests failed each time.
+
+**Live runs** (real API, `LLM_MODE=live`, Anna unless noted; latency and cost are per question)
+- "Ich will monatlich 50 € nachhaltig in Europa anlegen, ohne Waffen": `screen_products` with savings plan, Europa, SFDR ≥ 8, Waffen excluded; 5 of 40 match (P07, P11, P16, P12, P34); 8.6 s, 0.031 EUR; all checks pass.
+- "Ich will monatlich 50 € in Europa anlegen, aber mit Waffen. ": no exclusion filter, 12 of 40 match; the text says openly that the screener cannot target "with weapons"; 14.4 s, 0.036 EUR; all checks pass. Full event stream was shown in the session.
+- Markus, "Warum ist mein Depot im August gefallen?": `explain_move` 2026-08-01..31 → -316,98 € (-2,76 %), P03 -154,67 / P22 -120,88 / P11 -41,43, event E12; the same numbers as M4; 8.2 s, 0.028 EUR.
+- Extra: advice request refused in 1.2 s with no tool call; P13 question: the planted chunk was quarantined and `Ignoriere`/`SYSTEMHINWEIS` appear nowhere in the stream; IBAN and e-mail redacted before the model.
+- Record → replay with real responses: recorded the Markus question live (4 cassettes), replayed it with no key: identical `ui`, event sequence and usage.
+
+**Known gaps / decisions**
+- `text_delta` is emitted after the guardrails ran, in 4-word pieces (12 ms apart): unchecked text never reaches the client, but it is not token-live from the model. Tool events stream live.
+- `NUMBERS_GUARD` defaults to `flag` (plan risk 7): ungrounded numbers are reported, not repaired. Seven live answers had no false positive and no ungrounded number, but that is a small sample; M7's answers eval decides whether `fail` becomes the default. Known limit: matching is by value, so a bare integer equal to any source number (e.g. 12 as day of a date) counts as grounded.
+- Cassette files are named by the first 32 hex characters of the sha256 (full hash inside the file), not all 64: with a long checkout or scratch path the 64-character name overflowed Windows' 260-character limit (found while recording).
+- The screener cannot express "does not exclude X", so "mit Waffen" lists all Europe savings-plan products, including ones that exclude weapons. The model says so, but a filter would fix it properly (candidate for a contract change).
+- The P13 answer said the KID has no "Sonstige Informationen" section (it was withheld) while also saying a suspicious section was withheld. Accurate enough not to leak, but the wording is the model's; the withheld-note in the tool result could be more precise.
+- Latency 8-14 s per question (3-4 sequential LLM calls; the first router call is slowest); cost about 0.03 EUR. Tools run synchronously inside the event loop (milliseconds, except the first `search_kid`, which loads the embedding model).
+- Not connected to the frontend yet: it still uses fixtures. New guardrail names (`router_flags`, `router_fallback`, `repair`, `fallback`) and the `quarantined` chunk flag will show up in the trace panel in M8.
+- No cassettes are committed yet (M8 records the demo questions). `data/traces.sqlite` is gitignored. Injection heuristics, advice regexes and the input safety net are pattern lists: M7's red-team suite is where they get attacked.
+- `spec-reviewer` has not been run; PLAN.md schedules it for M5, M6 and M8 together in M8.
+
+**Next step**: M7, evals: `evals/{datasets, metrics.py, judge.py, run.py, thresholds.yaml}`, the router and red-team suites in replay mode for `make eval-ci`, and the answers eval (which also settles the `NUMBERS_GUARD` default). Start with `/clear` after this commit.
+

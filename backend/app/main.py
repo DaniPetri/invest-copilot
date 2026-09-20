@@ -1,6 +1,7 @@
 import asyncio
 import json
 from collections.abc import AsyncIterator
+from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -8,12 +9,16 @@ from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
+from .agent.llm import LLMClient, make_llm_client
+from .agent.orchestrator import Agent
 from .config import REPO_ROOT, get_settings
 from .data.store import DataMissingError, get_store
 from .rag.search import IndexMissingError
+from .schemas.events import ChatRequest, TraceRecord
 from .schemas.tools import ToolResult
 from .tools.base import ToolContext, ToolError
 from .tools.registry import execute
+from .tracing.store import TraceStore
 
 FIXTURE_DIR = REPO_ROOT / "frontend" / "fixtures" / "sse"
 
@@ -79,3 +84,37 @@ def run_tool(
         raise HTTPException(status_code=404 if e.code == "not_found" else 422, detail=e.message) from None
     except (DataMissingError, IndexMissingError) as e:
         raise HTTPException(status_code=503, detail=str(e)) from None
+
+
+# ── chat and traces (SPEC §9) ───────────────────────────────────────────────
+
+DELTA_DELAY_S = 0.012  # pacing of text_delta events so the answer visibly streams
+
+
+@lru_cache
+def get_llm_client() -> LLMClient:
+    return make_llm_client()
+
+
+@lru_cache
+def get_trace_store() -> TraceStore:
+    return TraceStore(get_settings().trace_db)
+
+
+def get_agent(ctx: Annotated[ToolContext, Depends(get_tool_context)]) -> Agent:
+    return Agent(get_llm_client(), ctx, get_settings(), get_trace_store(), delta_delay_s=DELTA_DELAY_S)
+
+
+@app.post("/api/chat")
+async def chat(req: ChatRequest, agent: Annotated[Agent, Depends(get_agent)]) -> EventSourceResponse:
+    """The agent's answer as an SSE stream: trace, router, tool_start/tool_end, retrieval, text_delta, ui, guardrail,
+    usage, done (or error). LLM_MODE decides live, record or replay."""
+    return EventSourceResponse(agent.run(req))
+
+
+@app.get("/api/traces/{trace_id}")
+def get_trace(trace_id: str, traces: Annotated[TraceStore, Depends(get_trace_store)]) -> TraceRecord:
+    record = traces.get(trace_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="unknown trace")
+    return TraceRecord.model_validate(record)

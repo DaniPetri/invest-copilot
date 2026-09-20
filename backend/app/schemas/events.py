@@ -133,6 +133,36 @@ class ErrorData(Contract):
     message: str
 
 
+# ── request and trace record (POST /api/chat, GET /api/traces/{id}) ─────────
+
+
+class ChatRequest(Contract):
+    customer_id: str
+    message: str = Field(min_length=1, max_length=2000)
+
+
+class TraceEventRecord(Contract):
+    seq: int = Field(ge=1)
+    t_ms: int = Field(ge=0, description="Milliseconds since the request started")
+    event: str
+    data: dict[str, Any]
+
+
+class TraceRecord(Contract):
+    """One stored request: what `GET /api/traces/{id}` returns. `message` is the PII-redacted user message."""
+
+    trace_id: str
+    started_at: str
+    mode: LLMMode
+    customer_id: str
+    message: str
+    intent: Intent | None
+    status: Literal["running", "ok", "fallback", "error", "cancelled"]
+    total_ms: int | None
+    cost_eur: float | None
+    events: list[TraceEventRecord]
+
+
 # ── envelopes (discriminated on `event`) ────────────────────────────────────
 
 

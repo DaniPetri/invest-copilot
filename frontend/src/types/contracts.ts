@@ -296,6 +296,35 @@ export interface GuardrailCheck {
   detail: string
 }
 
+/** Body of POST /api/chat. */
+export interface ChatRequest {
+  customer_id: string
+  /** 1 to 2000 characters */
+  message: string
+}
+
+export interface TraceEventRecord {
+  seq: number
+  /** Milliseconds since the request started */
+  t_ms: number
+  event: string
+  data: Record<string, unknown>
+}
+
+/** GET /api/traces/{id}. `message` is the PII-redacted user message. */
+export interface TraceRecord {
+  trace_id: string
+  started_at: string
+  mode: LLMMode
+  customer_id: string
+  message: string
+  intent: Intent | null
+  status: 'running' | 'ok' | 'fallback' | 'error' | 'cancelled'
+  total_ms: number | null
+  cost_eur: number | null
+  events: TraceEventRecord[]
+}
+
 export type SSEEvent =
   | { event: 'trace'; data: { trace_id: string; started_at: string; mode: LLMMode } }
   | {

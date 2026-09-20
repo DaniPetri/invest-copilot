@@ -20,3 +20,6 @@ dist/
 .claude/settings.local.json
 # os
 .DS_Store
+
+# traces
+data/traces.sqlite*

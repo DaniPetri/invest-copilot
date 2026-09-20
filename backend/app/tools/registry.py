@@ -164,8 +164,24 @@ def _strip_titles(node: Any) -> None:
             _strip_titles(item)
 
 
+def _const_to_enum(node: Any) -> None:
+    """`transform_schema` turns `const` into a plain description, which would stop a discriminator such as
+    `type: "text"` from being enforced. A one-value `enum` is supported by strict mode and enforced."""
+    if isinstance(node, dict):
+        if "const" in node:
+            node["enum"] = [node.pop("const")]
+        for value in node.values():
+            _const_to_enum(value)
+    elif isinstance(node, list):
+        for item in node:
+            _const_to_enum(item)
+
+
 def strict_input_schema(model: type[BaseModel]) -> dict:
-    schema = transform_schema(model)
+    """Schema for `strict: true` tools and `output_config.format`, derived from a pydantic model."""
+    raw = model.model_json_schema()
+    _const_to_enum(raw)
+    schema = transform_schema(raw)
     _strip_titles(schema)
     _make_required_nullable(schema)  # walks $defs as well
     return schema
@@ -240,6 +256,9 @@ class ResultStore:
             return self._results[result_id]
         except KeyError:
             raise KeyError(f"unknown result_id {result_id!r}") from None
+
+    def all(self) -> list[ToolResult]:
+        return list(self._results.values())
 
     def __len__(self) -> int:
         return len(self._results)

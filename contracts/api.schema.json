@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "ChatRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "message": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "message"
+      ],
+      "title": "ChatRequest",
+      "type": "object"
+    },
+    "TraceEventRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "additionalProperties": true,
+          "title": "Data",
+          "type": "object"
+        },
+        "event": {
+          "title": "Event",
+          "type": "string"
+        },
+        "seq": {
+          "minimum": 1,
+          "title": "Seq",
+          "type": "integer"
+        },
+        "t_ms": {
+          "description": "Milliseconds since the request started",
+          "minimum": 0,
+          "title": "T Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "seq",
+        "t_ms",
+        "event",
+        "data"
+      ],
+      "title": "TraceEventRecord",
+      "type": "object"
+    },
+    "TraceRecord": {
+      "additionalProperties": false,
+      "description": "One stored request: what `GET /api/traces/{id}` returns. `message` is the PII-redacted user message.",
+      "properties": {
+        "cost_eur": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cost Eur"
+        },
+        "customer_id": {
+          "title": "Customer Id",
+          "type": "string"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/TraceEventRecord"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "intent": {
+          "anyOf": [
+            {
+              "enum": [
+                "discover",
+                "product_question",
+                "portfolio_insight",
+                "simulate",
+                "learn",
+                "advice_request",
+                "out_of_scope"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Intent"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "live",
+            "record",
+            "replay"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "started_at": {
+          "title": "Started At",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "running",
+            "ok",
+            "fallback",
+            "error",
+            "cancelled"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "total_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Total Ms"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "started_at",
+        "mode",
+        "customer_id",
+        "message",
+        "intent",
+        "status",
+        "total_ms",
+        "cost_eur",
+        "events"
+      ],
+      "title": "TraceRecord",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "defs"
+}

@@ -7,6 +7,7 @@ Files:
   products.schema.json       $defs: Product, Company, MarketEvent
   portfolio.schema.json      $defs: Customer, PortfolioView (and their parts)
   evals.schema.json          $defs: EvalReport
+  api.schema.json            $defs: ChatRequest, TraceRecord
   tools.schema.json          $defs: <ToolName>Input / <ToolName>Output for every tool
 """
 
@@ -19,7 +20,7 @@ from pydantic.json_schema import models_json_schema
 
 from ..config import REPO_ROOT
 from .evals import EvalReport
-from .events import RouterDecision, SSEEvent
+from .events import ChatRequest, RouterDecision, SSEEvent, TraceRecord
 from .portfolio import Customer, PortfolioView
 from .products import Company, MarketEvent, Product
 from .tools import TOOL_MODELS
@@ -50,6 +51,7 @@ def export(out: Path) -> list[Path]:
         _write(out, "products", _defs([Product, Company, MarketEvent])),
         _write(out, "portfolio", _defs([Customer, PortfolioView])),
         _write(out, "evals", _defs([EvalReport])),
+        _write(out, "api", _defs([ChatRequest, TraceRecord])),
         _write(out, "tools", _defs(tool_models)),
     ]
 

@@ -7,13 +7,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# EUR per million tokens: (input, output). PLACEHOLDER values, editable: verify against the
-# current pricing page at platform.claude.com before relying on cost figures (planned for M6).
+# EUR per million tokens: (input, output). List prices in USD from platform.claude.com/docs/en/about-claude/pricing
+# (checked 2026-09-20: Haiku 4.5 $1/$5, Sonnet 5 $2/$10, Opus 5 $5/$25) times an assumed USD->EUR rate. Editable.
+USD_TO_EUR = 0.92
 PRICE_TABLE_EUR_PER_MTOK: dict[str, tuple[float, float]] = {
-    "claude-haiku-4-5-20251001": (0.9, 4.5),
-    "claude-sonnet-5": (2.7, 13.5),
-    "claude-opus-5": (4.5, 22.5),
+    "claude-haiku-4-5-20251001": (round(1 * USD_TO_EUR, 4), round(5 * USD_TO_EUR, 4)),
+    "claude-sonnet-5": (round(2 * USD_TO_EUR, 4), round(10 * USD_TO_EUR, 4)),
+    "claude-opus-5": (round(5 * USD_TO_EUR, 4), round(25 * USD_TO_EUR, 4)),
 }
+
+MAX_TOOL_ROUNDS = 6  # SPEC §8
+
+
+def cost_eur(model: str, input_tokens: int, output_tokens: int) -> float:
+    """Cost of one LLM call from the price table. Raises KeyError for a model without a price, so a mistyped
+    MODEL override fails loudly in the tests instead of silently costing nothing."""
+    price_in, price_out = PRICE_TABLE_EUR_PER_MTOK[model]
+    return (input_tokens * price_in + output_tokens * price_out) / 1_000_000
 
 
 class Settings(BaseSettings):
@@ -32,6 +42,11 @@ class Settings(BaseSettings):
     model_cache_dir: Path = Path.home() / ".cache" / "invest-copilot" / "fastembed"
     data_dir: Path = REPO_ROOT / "data" / "generated"
     cassette_dir: Path = REPO_ROOT / "fixtures" / "cassettes"
+    record_refresh: bool = False  # RECORD_REFRESH=1: `make record` overwrites existing cassettes
+    # Outside data/generated so `make data` does not wipe the traces.
+    trace_db: Path = REPO_ROOT / "data" / "traces.sqlite"
+    # "flag": ungrounded numbers are reported in the trace. "fail": they trigger the repair round (NUMBERS_GUARD=fail).
+    numbers_guard: Literal["flag", "fail"] = "flag"
 
     @property
     def has_api_key(self) -> bool:
